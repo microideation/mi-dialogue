@@ -6,6 +6,7 @@ package com.microideation.app.dialogue.event;
 public enum EventStore {
 
     RABBITMQ,
-    REDIS;
+    REDIS,
+    KAFKA;
 
 }

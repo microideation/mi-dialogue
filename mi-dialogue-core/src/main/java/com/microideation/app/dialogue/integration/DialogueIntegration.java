@@ -30,6 +30,10 @@ public class DialogueIntegration {
     @Qualifier(value = "dialogueRedisIntegration")
     private Integration redisIntegration;
 
+    @Autowired(required = false)
+    @Qualifier(value = "dialogueKafkaIntegration")
+    private Integration kafkaIntegration;
+
 
 
 
@@ -122,6 +126,22 @@ public class DialogueIntegration {
 
                 // Return the redis integration
                 return redisIntegration;
+
+
+            // Processing for the kafka type
+            case KAFKA:
+
+                // Check if the integration is available
+                if ( kafkaIntegration == null ) {
+
+                    throw new DialogueException(ErrorCode.ERR_INTEGRATION_NOT_AVAILABLE,
+                            "Redis integration is not available. Please make sure that the mi-dialogue-kafka is added as dependency");
+
+                }
+
+                // Return the kafka integration
+                return kafkaIntegration;
+
 
             default:
 

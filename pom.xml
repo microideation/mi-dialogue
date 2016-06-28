@@ -26,6 +26,7 @@
 		<module>mi-dialogue-core</module>
 		<module>mi-dialogue-redis</module>
 		<module>mi-dialogue-rabbit</module>
+        <module>mi-dialogue-kafka</module>
 	</modules>
 	
 	<build>
