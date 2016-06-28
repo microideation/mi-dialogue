@@ -19,5 +19,4 @@ public @interface PublishEvent {
     public boolean isPersistent() default false;
     public String channelName();
 
-
 }
