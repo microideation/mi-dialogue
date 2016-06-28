@@ -135,7 +135,7 @@ public class DialogueIntegration {
                 if ( kafkaIntegration == null ) {
 
                     throw new DialogueException(ErrorCode.ERR_INTEGRATION_NOT_AVAILABLE,
-                            "Redis integration is not available. Please make sure that the mi-dialogue-kafka is added as dependency");
+                            "Kafka integration is not available. Please make sure that the mi-dialogue-kafka is added as dependency");
 
                 }
 
