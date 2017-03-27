@@ -22,11 +22,14 @@ public class DialogueEvent implements Serializable{
     private transient ObjectMapper objectMapper;
 
 
-    public DialogueEvent() {}
+    public DialogueEvent() {
+        this.headers = new Header();
+    }
 
     public DialogueEvent(String payload) {
 
         this.payload = payload;
+        this.headers = new Header();
 
     }
 

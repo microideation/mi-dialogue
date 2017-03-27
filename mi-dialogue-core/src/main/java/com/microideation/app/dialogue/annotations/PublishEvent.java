@@ -16,6 +16,7 @@ import java.lang.annotation.Target;
 public @interface PublishEvent {
 
     public EventStore eventStore();
+    public String eventName();
     public boolean isPersistent() default false;
     public String channelName();
 

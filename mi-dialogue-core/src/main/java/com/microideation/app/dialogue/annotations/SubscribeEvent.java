@@ -16,5 +16,6 @@ public @interface SubscribeEvent {
 
     public EventStore eventStore();
     public String channelName();
+    public String subscriberChannelName() default "";
 
 }
