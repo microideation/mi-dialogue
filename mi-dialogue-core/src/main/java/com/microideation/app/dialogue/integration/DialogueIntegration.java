@@ -80,7 +80,7 @@ public class DialogueIntegration {
         integration.isIntegrationAvailable();
 
         // Call the registerSubscriber method of the integraton
-        integration.registerSubscriber(listenerClass, method.getName(), subscribeEvent.channelName());
+        integration.registerSubscriber(listenerClass, method.getName(), subscribeEvent);
 
     }
 

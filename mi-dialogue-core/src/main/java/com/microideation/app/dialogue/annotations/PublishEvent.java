@@ -1,6 +1,7 @@
 package com.microideation.app.dialogue.annotations;
 
 import com.microideation.app.dialogue.event.EventStore;
+import com.microideation.app.dialogue.event.PublishType;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -16,9 +17,10 @@ import java.lang.annotation.Target;
 public @interface PublishEvent {
 
     public EventStore eventStore();
-    public String eventName();
+    public String eventName() default "";
     public boolean isPersistent() default false;
     public String channelName();
+    public PublishType publishType() default PublishType.BROADCAST;
 
 
 }

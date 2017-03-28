@@ -1,23 +1,25 @@
 package com.microideation.app.dialogue.kafka.integration;
 
 import com.microideation.app.dialogue.annotations.PublishEvent;
+import com.microideation.app.dialogue.annotations.SubscribeEvent;
 import com.microideation.app.dialogue.event.DialogueEvent;
 import com.microideation.app.dialogue.integration.Integration;
 import com.microideation.app.dialogue.integration.IntegrationUtils;
 import com.microideation.app.dialogue.support.exception.DialogueException;
 import com.microideation.app.dialogue.support.exception.ErrorCode;
-import org.apache.el.util.ReflectionUtil;
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.channel.DirectChannel;
-import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.kafka.inbound.KafkaMessageDrivenChannelAdapter;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.kafka.listener.config.ContainerProperties;
 import org.springframework.kafka.support.TopicPartitionInitialOffset;
-import org.springframework.messaging.*;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandler;
+import org.springframework.messaging.MessagingException;
+import org.springframework.messaging.SubscribableChannel;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
@@ -62,7 +64,20 @@ public class DialogueKafkaIntegration implements Integration {
     }
 
     @Override
-    public void registerSubscriber(Object listenerClass, String methodName, String channelName) {
+    public void registerSubscriber(Object listenerClass, String methodName, SubscribeEvent subscribeEvent) {
+
+        // Check if the subscriber has got eventname specified, if yes, we need to
+        // show error message as listening to specific key is not supported as of now
+        if ( subscribeEvent.eventName() != null || !subscribeEvent.eventName().equals("") ) {
+
+            // Throw the exception
+            throw new DialogueException(ErrorCode.ERR_EVENT_SPECIFIC_SUBSCRIBER_NOT_SUPPORTED,
+                    "Event name specific listening is not supported in Kafka integration");
+
+        }
+
+        // Get the channelName
+        String channelName = subscribeEvent.channelName();
 
         // Get the finalClass for the listenerClass
         Class finalClass = AopProxyUtils.ultimateTargetClass(listenerClass);

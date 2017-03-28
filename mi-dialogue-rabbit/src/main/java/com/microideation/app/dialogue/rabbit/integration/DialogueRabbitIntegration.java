@@ -1,7 +1,9 @@
 package com.microideation.app.dialogue.rabbit.integration;
 
 import com.microideation.app.dialogue.annotations.PublishEvent;
+import com.microideation.app.dialogue.annotations.SubscribeEvent;
 import com.microideation.app.dialogue.event.DialogueEvent;
+import com.microideation.app.dialogue.event.PublishType;
 import com.microideation.app.dialogue.integration.Integration;
 import com.microideation.app.dialogue.integration.IntegrationUtils;
 import com.microideation.app.dialogue.support.exception.DialogueException;
@@ -53,12 +55,12 @@ public class DialogueRabbitIntegration implements Integration {
     /**
      * Method to build the queue using the autowired rabbit configuration
      *
-     * @param queueName : The name of the queue
-     * @param persist   : Flag showing whether the queue need to be persistent or not
+     * @param queueName    : The name of the queue
+     * @param publishEvent : The PublishEvent annotation object
      *
      * @return          : Return the queue object created
      */
-    public Exchange buildExchange(String queueName,boolean persist) {
+    public Exchange buildExchange(String queueName, PublishEvent publishEvent) {
 
         // Check if the queue is already existing
         if ( rabbitChannels.containsKey(queueName) ) {
@@ -68,29 +70,63 @@ public class DialogueRabbitIntegration implements Integration {
 
         }
 
-        //add a fanout exchange for the queue
-        FanoutExchange exchange = new FanoutExchange(queueName);
+        // Check the event type and based on that declare the exchange
+        // If the type is broadcast, we need to declare a Fanout exchange so that
+        // the event is passed to all the queues irrespective of the routing key
+        if ( publishEvent.publishType() == PublishType.BROADCAST ) {
 
-        //declare the exchange
-        amqpAdmin.declareExchange(exchange);
+            //add a fanout exchange for the queue
+            FanoutExchange exchange = new FanoutExchange(queueName);
 
-        // Add the queue to the channels list
-        rabbitChannels.put(queueName,exchange);
+            //declare the exchange
+            amqpAdmin.declareExchange(exchange);
 
-        //  return the exchange
-        return exchange;
+            // Add the queue to the channels list
+            rabbitChannels.put(queueName, exchange);
+
+            // return exchange
+            return exchange;
+
+        } else {
+
+            // Check if the eventName is not specified, we need to throw an error as eventName is not there
+            if ( publishEvent.eventName() == null || publishEvent.eventName().equals("") ) {
+
+                // Throw exception
+                throw new DialogueException(ErrorCode.ERR_EVENT_NAME_NOT_SPECIFIED,"Eventname not specified for the eventType : LISTENER_ONLY : "+
+                                            publishEvent.channelName()
+                                           );
+
+
+            }
+
+            // Add a Direct Exchange
+            DirectExchange directExchange = new DirectExchange(queueName);
+
+            //declare the exchange
+            amqpAdmin.declareExchange(directExchange);
+
+            // Add the queue to the channels list
+            rabbitChannels.put(queueName, directExchange);
+
+            // Return the direct exchange
+            return directExchange;
+
+        }
 
     }
 
     /**
      * Method to build the queue using the autowired rabbit configuration
      *
+     * @param channelName: The name of channel ( exchange )
      * @param queueName : The name of the queue
      * @param persist   : Flag showing whether the queue need to be persistent or not
+     * @param eventName : The name of the event listening to ( routing key )
      *
      * @return          : Return the queue object created
      */
-    public Queue buildQueue(String channelName,String queueName,boolean persist) {
+    public Queue buildQueue(String channelName,String queueName,boolean persist,String eventName) {
 
         // Check if the queue is already existing
         if ( rabbitQueues.containsKey(queueName) ) {
@@ -103,20 +139,41 @@ public class DialogueRabbitIntegration implements Integration {
         // Declare the queue object
         Queue queue = new Queue(queueName,persist);
 
-        //add a topic exchange for the queue
-        FanoutExchange exchange = new FanoutExchange(channelName);
-
         //declare the queue
         amqpAdmin.declareQueue(queue);
 
-        //declare the exchange
-        amqpAdmin.declareExchange(exchange);
+        // Check if the eventName is specified, then use a direct exchange with
+        // eventName as the routingKey
+        if ( eventName != null && !eventName.equals("")) {
 
-        //add binding for queue and exchange
-        amqpAdmin.declareBinding(BindingBuilder.bind(queue).to(exchange));
+            // Create a directExchange
+            DirectExchange directExchange = new DirectExchange(channelName);
 
-        // Add the queue to the channels list
-        rabbitQueues.put(queueName,queue);
+            //declare the exchange
+            amqpAdmin.declareExchange(directExchange);
+
+            //add binding for queue and exchange
+            amqpAdmin.declareBinding(BindingBuilder.bind(queue).to(directExchange).with(eventName));
+
+            // Add the queue to the channels list
+            rabbitQueues.put(queueName,queue);
+
+
+        } else {
+
+            //add a topic exchange for the queue
+            FanoutExchange exchange = new FanoutExchange(channelName);
+
+            //declare the exchange
+            amqpAdmin.declareExchange(exchange);
+
+            //add binding for queue and exchange
+            amqpAdmin.declareBinding(BindingBuilder.bind(queue).to(exchange));
+
+            // Add the queue to the channels list
+            rabbitQueues.put(queueName, queue);
+
+        }
 
         //  return the queue
         return queue;
@@ -128,14 +185,28 @@ public class DialogueRabbitIntegration implements Integration {
      *
      * @param listener      : The listener class object
      * @param methodName    : The name of the method for the listener
-     * @param channelName   : The name of the channel to which listener need to be pointed ( exchange name )
+     * @param subscribeEvent: The subscribeEvent annotation object
      *
      * @return              : Return the SimpleMessageListenerContainer object
      */
-    public SimpleMessageListenerContainer createListenerContainer(Object listener,String methodName,String channelName) {
+    public SimpleMessageListenerContainer createListenerContainer(Object listener,String methodName,SubscribeEvent subscribeEvent) {
+
+        // Set the channelName
+        String channelName = subscribeEvent.channelName();
+
+        // Get the property value for the channelName
+        channelName = integrationUtils.getEnvironmentProperty(channelName);
 
         // Set the queueName to be the
         String queueName = channelName +".sub-"+methodName.toLowerCase();
+
+        // If the eventName is present, then add it to the queuename
+        if ( subscribeEvent.eventName() != null && !subscribeEvent.eventName().equals("")) {
+
+            // add it to the queuename
+            queueName += "-"+subscribeEvent.eventName().toLowerCase();
+
+        }
 
         // If the queue already contains the listener, then return the instance
         if ( rabbitContainers.containsKey(queueName) ) {
@@ -149,7 +220,7 @@ public class DialogueRabbitIntegration implements Integration {
 
         // Build the queue
         // If the queue is already existing, this will fail.
-        buildQueue(channelName,queueName,false);
+        buildQueue(channelName,queueName,false,subscribeEvent.eventName());
 
         //add a message listener for the queue , receiver object is also created for each smsChannel
         MessageListenerAdapter messageListenerAdapter = new MessageListenerAdapter( listener ,methodName);
@@ -189,13 +260,13 @@ public class DialogueRabbitIntegration implements Integration {
         String channelName = integrationUtils.getEnvironmentProperty(publishEvent.channelName());
 
         // Get the exchange
-        Exchange exchange = buildExchange(channelName,publishEvent.isPersistent());
+        Exchange exchange = buildExchange(channelName,publishEvent);
 
         // If the exchange is null, return false
         if ( exchange == null ) return false;
 
         // Send to the queue using the rabbitTemplate
-        rabbitTemplate.convertAndSend(channelName,channelName,dialogueEvent);
+        rabbitTemplate.convertAndSend(channelName,publishEvent.eventName(),dialogueEvent);
 
         // return the object passed;
         return dialogueEvent;
@@ -206,26 +277,14 @@ public class DialogueRabbitIntegration implements Integration {
      * Overridden method to register the subscriber
      * @param listenerClass : The listener class object
      * @param methodName    : The name of the method for the listener
-     * @param channelName   : The name of the queue for which this listener is enabled.
+     * @param subscribeEvent: The subscribeEvent annotation object
      *
      */
     @Override
-    public void registerSubscriber(Object listenerClass,String methodName, String channelName) {
-
-
-        // Get the property value for the channelName
-        channelName = integrationUtils.getEnvironmentProperty(channelName);
-
-        /*// Check if the channel is already registered in the instance
-        if ( rabbitContainers.containsKey(channelName) ) {
-
-            throw new DialogueException(ErrorCode.ERR_DUPLICATE_SUBSCRIBER_NOT_SUPPORTED,"Duplicate subscriber for rabbit channel : " +
-                                        channelName + " on method: " + methodName);
-
-        }*/
+    public void registerSubscriber(Object listenerClass, String methodName, SubscribeEvent subscribeEvent) {
 
         // Call the method to create the listener
-        createListenerContainer(listenerClass,methodName,channelName);
+        createListenerContainer(listenerClass,methodName,subscribeEvent);
 
     }
 
