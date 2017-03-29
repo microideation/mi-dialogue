@@ -99,6 +99,7 @@ public class DialogueEvent implements Serializable{
     public String toString() {
         return "DialogueEvent{" +
                 "payload='" + payload + '\'' +
+                ", headers=" + headers +
                 '}';
     }
 }
