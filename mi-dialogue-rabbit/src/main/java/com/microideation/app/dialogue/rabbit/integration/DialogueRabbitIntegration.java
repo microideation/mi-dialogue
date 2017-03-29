@@ -268,6 +268,8 @@ public class DialogueRabbitIntegration implements Integration {
         // Send to the queue using the rabbitTemplate
         rabbitTemplate.convertAndSend(channelName,publishEvent.eventName(),dialogueEvent);
 
+        rabbitTemplate.convertAndSend();
+
         // return the object passed;
         return dialogueEvent;
 

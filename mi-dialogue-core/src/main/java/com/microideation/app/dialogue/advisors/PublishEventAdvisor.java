@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microideation.app.dialogue.annotations.PublishEvent;
 import com.microideation.app.dialogue.dictionary.DialogueHeaderKeys;
 import com.microideation.app.dialogue.event.DialogueEvent;
+import com.microideation.app.dialogue.event.PublishEventImpl;
 import com.microideation.app.dialogue.integration.DialogueIntegration;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
