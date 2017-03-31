@@ -13,7 +13,9 @@ import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
@@ -39,6 +41,9 @@ public class DialogueRabbitIntegration implements Integration {
 
     @Autowired
     private IntegrationUtils integrationUtils;
+
+    @Autowired
+    private Environment environment;
 
 
     @Resource
@@ -197,14 +202,22 @@ public class DialogueRabbitIntegration implements Integration {
         // Get the property value for the channelName
         channelName = integrationUtils.getEnvironmentProperty(channelName);
 
+        // if the channel name is greater than 250 characters, then reject it
+        if ( channelName.length() > 250 ) {
+
+            // Throw the DialogueException
+            throw new DialogueException("Channel name exceeds 250 character limit for channel " + channelName);
+
+        }
+
         // Set the queueName to be the
-        String queueName = channelName +".sub-"+methodName.toLowerCase();
+        String queueName = getQueueName(listener,methodName,channelName,subscribeEvent.eventName());
 
-        // If the eventName is present, then add it to the queuename
-        if ( subscribeEvent.eventName() != null && !subscribeEvent.eventName().equals("")) {
+        // if the queueName is greater than 250 characters, then reject it
+        if ( queueName.length() > 250 ) {
 
-            // add it to the queuename
-            queueName += "-"+subscribeEvent.eventName().toLowerCase();
+            // Throw the DialogueException
+            throw new DialogueException("Queue name exceeds 250 character limit for queue " + queueName);
 
         }
 
@@ -244,6 +257,56 @@ public class DialogueRabbitIntegration implements Integration {
 
     }
 
+
+    /**
+     * Method to create the queue name in the following format
+     * {channelname}-sub-{servicename}.{class}.{method}-{event}
+     *
+     * @param listener      : The listener object subscribed to the event
+     * @param methodName    : The name of the method that is annotated with
+     * @param channelName   : The channel to which queue is listening
+     * @param eventName     : The name of the event if subscribed to an event
+     *
+     * @return              : Return the queue name based on the format with passed fields
+     *                        If the service name is not specified, this will throw an error.
+     */
+    private String getQueueName(Object listener,String methodName, String channelName,String eventName) {
+
+        // Get the service name
+        String serviceName = environment.getProperty("spring.application.name");
+
+        // If the name is null or empty, then don't start the queue
+        if ( serviceName == null || serviceName.isEmpty() || serviceName.equals("spring.application.name")) {
+
+            // Throw the exception
+            throw new DialogueException(ErrorCode.ERR_SERVICE_NAME_NOT_PROVIDED,
+                    "The service name is not set. Please set the spring.application.name property in application.properties / application.yml file");
+
+
+        }
+
+        // Remove spaces from service name
+        serviceName = serviceName.replaceAll(" ","");
+
+        // Get the class name
+        String className = AopUtils.getTargetClass(listener).getSimpleName();
+
+        // Set the queueName to be the
+        String queueName = channelName +"-sub-"+serviceName.toLowerCase()+"."+className.toLowerCase()+"."+methodName.toLowerCase();
+
+        // If the eventName is present, then add it to the queuename
+        if ( eventName != null && !eventName.equals("")) {
+
+            // add it to the queuename
+            queueName += "-listen-"+eventName.toLowerCase();
+
+        }
+
+        // Return the queueName
+        return queueName;
+
+    }
+
     /**
      * Method to publish an item to the queue
      *
@@ -258,6 +321,14 @@ public class DialogueRabbitIntegration implements Integration {
 
         // Get the property value for the channelName
         String channelName = integrationUtils.getEnvironmentProperty(publishEvent.channelName());
+
+        // if the channel name is greater than 250 characters, then reject it
+        if ( channelName.length() > 250 ) {
+
+            // Throw the DialogueException
+            throw new DialogueException("Channel name exceeds 250 character limit for channel " + channelName);
+
+        }
 
         // Get the exchange
         Exchange exchange = buildExchange(channelName,publishEvent);
