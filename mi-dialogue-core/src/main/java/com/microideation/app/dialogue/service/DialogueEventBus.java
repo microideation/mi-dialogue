@@ -1,5 +1,6 @@
 package com.microideation.app.dialogue.service;
 
+import com.microideation.app.dialogue.dictionary.DomainChangeEventType;
 import com.microideation.app.dialogue.event.EventStore;
 import com.microideation.app.dialogue.event.PublishType;
 
@@ -61,4 +62,32 @@ public interface DialogueEventBus {
      * @param payload       : The payload for the event
      */
     void publish(String channelName, String eventName, EventStore eventStore, PublishType publishType, boolean isPersistent, Object payload);
+
+    /**
+     * Method to broadcast the event change for the Domain
+     * This will convert the domain to resource class specified and
+     * broadcast that Resource object
+     *
+     * @param channelName    : The name of the channel using which to send
+     * @param eventType      : The type of the event
+     * @param resourceClass  : The resource class
+     * @param entity         : The entity to be converted to Resource
+     * @param <T>            : The Resrouce class
+     */
+    <T> void broadcastDomainChange(String channelName, DomainChangeEventType eventType, Class<T> resourceClass, Object entity);
+
+    /**
+     * Method to broadcast the event change for the Domain
+     * This will convert the domain to resource class specified and
+     * broadcast that Resource object
+     *
+     * @param channelName    : Name of the channel
+     * @param eventType      : EventType
+     * @param eventStore     : EventStore to use for events
+     * @param isPersistent   : IS the eventstore persistent
+     * @param resourceClass  : The Resource class to which the entity need to be converted
+     * @param entity         : The actual entity object
+     * @param <T>            : Resource class
+     */
+    <T> void broadcastDomainChange(String channelName, DomainChangeEventType eventType, EventStore eventStore, boolean isPersistent, Class<T> resourceClass, Object entity);
 }
