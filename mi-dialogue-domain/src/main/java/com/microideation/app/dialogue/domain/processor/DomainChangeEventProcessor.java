@@ -1,4 +1,4 @@
-package com.microideation.app.dialogue.support;
+package com.microideation.app.dialogue.domain.processor;
 
 import com.microideation.app.dialogue.dictionary.DialogueHeaderKeys;
 import com.microideation.app.dialogue.dictionary.DomainChangeEventType;
