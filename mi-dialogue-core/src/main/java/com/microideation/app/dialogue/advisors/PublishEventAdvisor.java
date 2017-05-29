@@ -2,6 +2,7 @@ package com.microideation.app.dialogue.advisors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microideation.app.dialogue.annotations.PublishEvent;
+import com.microideation.app.dialogue.authority.DialogueAuthorityManager;
 import com.microideation.app.dialogue.dictionary.DialogueHeaderKeys;
 import com.microideation.app.dialogue.event.DialogueEvent;
 import com.microideation.app.dialogue.integration.DialogueIntegration;
@@ -25,6 +26,9 @@ public class PublishEventAdvisor {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private DialogueAuthorityManager dialogueAuthorityManager;
 
 
 
@@ -53,6 +57,9 @@ public class PublishEventAdvisor {
 
         // Set the event name
         dialogueEvent.getHeaders().put(DialogueHeaderKeys.EVENT_NAME,publishEvent.eventName());
+
+        // Set the authority headers
+        dialogueEvent.setAuthorityHeader(dialogueAuthorityManager.getEventAuthority());
 
         // call the processPublishEvent method for processing
         dialogueIntegration.processPublishEvent(publishEvent, dialogueEvent);

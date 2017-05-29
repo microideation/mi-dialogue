@@ -2,6 +2,8 @@ package com.microideation.app.dialogue.advisors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microideation.app.dialogue.annotations.SubscribeEvent;
+import com.microideation.app.dialogue.authority.DialogueEventAuthorityAuth;
+import com.microideation.app.dialogue.authority.EventAuthority;
 import com.microideation.app.dialogue.event.DialogueEvent;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -19,6 +21,9 @@ public class SubscribeEventAdvisor {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private DialogueEventAuthorityAuth dialogueEventAuthorityAuth;
 
 
     @Pointcut(value="execution(public * *(..))")
@@ -38,6 +43,17 @@ public class SubscribeEventAdvisor {
 
         // Set the objectMapper
         dialogueEvent.setObjectMapper(objectMapper);
+
+        // Check if the eventAuthority is present
+        EventAuthority eventAuthority = dialogueEvent.getEventAuthority();
+
+        // Check if the eventAuthority is null
+        if ( eventAuthority != null ) {
+
+            // Call the method in the dialogueEventAuthorityAuth
+            dialogueEventAuthorityAuth.setEventAuthorityAuth(eventAuthority);
+
+        }
 
         // Create the arrya
         DialogueEvent dialogueEvents[] = {dialogueEvent};

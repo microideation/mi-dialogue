@@ -3,6 +3,7 @@ package com.microideation.app.dialogue.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microideation.app.dialogue.annotations.PublishEvent;
+import com.microideation.app.dialogue.authority.DialogueAuthorityManager;
 import com.microideation.app.dialogue.dictionary.DialogueHeaderKeys;
 import com.microideation.app.dialogue.dictionary.DomainChangeEventType;
 import com.microideation.app.dialogue.event.DialogueEvent;
@@ -27,11 +28,16 @@ import java.io.IOException;
 public class DialogueEventBusImpl implements DialogueEventBus {
 
 
+
     @Autowired
     private DialogueIntegration dialogueIntegration;
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private DialogueAuthorityManager dialogueAuthorityManager;
+
 
 
 
@@ -226,12 +232,14 @@ public class DialogueEventBusImpl implements DialogueEventBus {
         // Set the event name
         dialogueEvent.getHeaders().put(DialogueHeaderKeys.EVENT_NAME,publishEvent.eventName());
 
+        // Set the authority headers
+        dialogueEvent.setAuthorityHeader(dialogueAuthorityManager.getEventAuthority());
+
         // call the processPublishEvent method for processing
         dialogueIntegration.processPublishEvent(publishEvent, dialogueEvent);
 
 
     }
-
 
 
 }
