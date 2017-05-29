@@ -16,11 +16,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD) //can use in method only.
 public @interface PublishEvent {
 
-    public EventStore eventStore();
-    public String eventName() default "";
-    public boolean isPersistent() default false;
-    public String channelName();
-    public PublishType publishType() default PublishType.BROADCAST;
-
+    EventStore eventStore();
+    String eventName() default "";
+    boolean isPersistent() default false;
+    String channelName();
+    PublishType publishType() default PublishType.BROADCAST;
+    boolean isSetAuthority() default true;
 
 }

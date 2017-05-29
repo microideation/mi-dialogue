@@ -14,8 +14,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD) //can use in method only.
 public @interface SubscribeEvent {
 
-    public EventStore eventStore();
-    public String channelName();
-    public String eventName() default "";
+    EventStore eventStore();
+    String channelName();
+    String eventName() default "";
+    boolean isSetAuthentication() default true;
 
 }

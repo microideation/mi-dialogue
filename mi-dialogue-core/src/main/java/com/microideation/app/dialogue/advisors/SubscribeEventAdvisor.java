@@ -44,14 +44,19 @@ public class SubscribeEventAdvisor {
         // Set the objectMapper
         dialogueEvent.setObjectMapper(objectMapper);
 
-        // Check if the eventAuthority is present
-        EventAuthority eventAuthority = dialogueEvent.getEventAuthority();
+        // Check if the setAuthentication is true
+        if ( subscribeEvent.isSetAuthentication() ) {
 
-        // Check if the eventAuthority is null
-        if ( eventAuthority != null ) {
+            // Check if the eventAuthority is present
+            EventAuthority eventAuthority = dialogueEvent.getEventAuthority();
 
-            // Call the method in the dialogueEventAuthorityAuth
-            dialogueEventAuthorityAuth.setEventAuthorityAuth(eventAuthority);
+            // Check if the eventAuthority is null
+            if ( eventAuthority != null ) {
+
+                // Call the method in the dialogueEventAuthorityAuth
+                dialogueEventAuthorityAuth.setEventAuthorityAuth(eventAuthority);
+
+            }
 
         }
 

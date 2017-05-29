@@ -59,9 +59,10 @@ public interface DialogueEventBus {
      * @param eventStore    : Eventstore
      * @param publishType   : Event publish type
      * @param isPersistent  : Whether the channel is persistent or not
+     * @param isSetAuthority: Whether the authority need to be set or not
      * @param payload       : The payload for the event
      */
-    void publish(String channelName, String eventName, EventStore eventStore, PublishType publishType, boolean isPersistent, Object payload);
+    void publish(String channelName, String eventName, EventStore eventStore, PublishType publishType, boolean isPersistent,boolean isSetAuthority, Object payload);
 
     /**
      * Method to broadcast the event change for the Domain
@@ -84,10 +85,11 @@ public interface DialogueEventBus {
      * @param channelName    : Name of the channel
      * @param eventType      : EventType
      * @param eventStore     : EventStore to use for events
-     * @param isPersistent   : IS the eventstore persistent
+     * @param isPersistent   : IS the event store persistent
+     * @param isSetAuthority : Do we need to set the authority
      * @param resourceClass  : The Resource class to which the entity need to be converted
      * @param entity         : The actual entity object
      * @param <T>            : Resource class
      */
-    <T> void broadcastDomainChange(String channelName, DomainChangeEventType eventType, EventStore eventStore, boolean isPersistent, Class<T> resourceClass, Object entity);
+    <T> void broadcastDomainChange(String channelName, DomainChangeEventType eventType, EventStore eventStore, boolean isPersistent, boolean isSetAuthority, Class<T> resourceClass, Object entity);
 }

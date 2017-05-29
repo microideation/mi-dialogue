@@ -51,6 +51,7 @@ public class DialogueEventBusImpl implements DialogueEventBus {
         publishEvent.setEventName("");
         publishEvent.setEventStore(EventStore.RABBITMQ);
         publishEvent.setPersistent(false);
+        publishEvent.setAuthority(true);
         publishEvent.setPublishType(PublishType.BROADCAST);
 
         // Call the publishToChannel
@@ -68,6 +69,7 @@ public class DialogueEventBusImpl implements DialogueEventBus {
         publishEvent.setEventName("");
         publishEvent.setEventStore(eventStore);
         publishEvent.setPersistent(false);
+        publishEvent.setAuthority(true);
         publishEvent.setPublishType(PublishType.BROADCAST);
 
         // Call the publishToChannel
@@ -85,6 +87,7 @@ public class DialogueEventBusImpl implements DialogueEventBus {
         publishEvent.setEventName(eventName);
         publishEvent.setEventStore(EventStore.RABBITMQ);
         publishEvent.setPersistent(false);
+        publishEvent.setAuthority(true);
         publishEvent.setPublishType(PublishType.EVENT_SPECIFIC);
 
         // Call the publishToChannel
@@ -93,7 +96,7 @@ public class DialogueEventBusImpl implements DialogueEventBus {
     }
 
     @Override
-    public void publish(String channelName, String eventName, EventStore eventStore, PublishType publishType, boolean isPersistent, Object payload) {
+    public void publish(String channelName, String eventName, EventStore eventStore, PublishType publishType, boolean isPersistent,boolean isSetAuthority, Object payload) {
 
         // Create the PublishEventImpl with the fields pased and defaults for others
         PublishEventImpl publishEvent = new PublishEventImpl();
@@ -102,14 +105,13 @@ public class DialogueEventBusImpl implements DialogueEventBus {
         publishEvent.setEventName(eventName);
         publishEvent.setEventStore(eventStore);
         publishEvent.setPersistent(isPersistent);
+        publishEvent.setAuthority(isSetAuthority);
         publishEvent.setPublishType(publishType);
 
         // Call the publishToChannel
         publishToChannel(publishEvent,payload);
 
     }
-
-
 
     @Override
     public <T> void broadcastDomainChange(String channelName, DomainChangeEventType eventType, Class<T> resourceClass, Object entity) {
@@ -121,6 +123,7 @@ public class DialogueEventBusImpl implements DialogueEventBus {
         publishEvent.setEventName(eventType.name());
         publishEvent.setEventStore(EventStore.RABBITMQ);
         publishEvent.setPersistent(false);
+        publishEvent.setAuthority(true);
         publishEvent.setPublishType(PublishType.BROADCAST);
 
         // Get the Resource
@@ -131,11 +134,8 @@ public class DialogueEventBusImpl implements DialogueEventBus {
 
     }
 
-
-
-
     @Override
-    public <T> void broadcastDomainChange(String channelName, DomainChangeEventType eventType, EventStore eventStore, boolean isPersistent, Class<T> resourceClass, Object entity) {
+    public <T> void broadcastDomainChange(String channelName, DomainChangeEventType eventType, EventStore eventStore, boolean isPersistent, boolean isSetAuthority, Class<T> resourceClass, Object entity) {
 
         // Create the PublishEventImpl with the fields pased and defaults for others
         PublishEventImpl publishEvent = new PublishEventImpl();
@@ -144,6 +144,8 @@ public class DialogueEventBusImpl implements DialogueEventBus {
         publishEvent.setEventName(eventType.name());
         publishEvent.setEventStore(eventStore);
         publishEvent.setPersistent(isPersistent);
+        publishEvent.setAuthority(isSetAuthority);
+        publishEvent.setAuthority(true);
         publishEvent.setPublishType(PublishType.BROADCAST);
 
         // Get the Resource
@@ -153,6 +155,8 @@ public class DialogueEventBusImpl implements DialogueEventBus {
         publishToChannel(publishEvent,resource);
 
     }
+
+
 
 
     /**
@@ -232,8 +236,13 @@ public class DialogueEventBusImpl implements DialogueEventBus {
         // Set the event name
         dialogueEvent.getHeaders().put(DialogueHeaderKeys.EVENT_NAME,publishEvent.eventName());
 
-        // Set the authority headers
-        dialogueEvent.setAuthorityHeader(dialogueAuthorityManager.getEventAuthority());
+        // If the isSetAuthority is true, then set the authority
+        if ( publishEvent.isSetAuthority() ) {
+
+            // Set the authority headers
+            dialogueEvent.setAuthorityHeader(dialogueAuthorityManager.getEventAuthority());
+
+        }
 
         // call the processPublishEvent method for processing
         dialogueIntegration.processPublishEvent(publishEvent, dialogueEvent);

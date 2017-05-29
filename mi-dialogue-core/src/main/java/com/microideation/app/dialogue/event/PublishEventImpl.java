@@ -15,6 +15,7 @@ public class PublishEventImpl implements PublishEvent {
     private boolean isPersistent;
     private PublishType publishType;
     private Class<? extends Annotation> annotationType;
+    private boolean isSetAuthority;
 
 
     // Annotation overridden methods
@@ -41,6 +42,11 @@ public class PublishEventImpl implements PublishEvent {
     @Override
     public PublishType publishType() {
         return publishType;
+    }
+
+    @Override
+    public boolean isSetAuthority() {
+        return isSetAuthority;
     }
 
     @Override
@@ -72,5 +78,9 @@ public class PublishEventImpl implements PublishEvent {
 
     public void setAnnotationType(Class<? extends Annotation> annotationType) {
         this.annotationType = annotationType;
+    }
+
+    public void setAuthority(boolean isSetAuthority) {
+        this.isSetAuthority = isSetAuthority;
     }
 }

@@ -58,8 +58,13 @@ public class PublishEventAdvisor {
         // Set the event name
         dialogueEvent.getHeaders().put(DialogueHeaderKeys.EVENT_NAME,publishEvent.eventName());
 
-        // Set the authority headers
-        dialogueEvent.setAuthorityHeader(dialogueAuthorityManager.getEventAuthority());
+        // Set the authority if the setAuthority flag is true for the annotation
+        if ( publishEvent.isSetAuthority() ) {
+
+            // Set the authority headers
+            dialogueEvent.setAuthorityHeader(dialogueAuthorityManager.getEventAuthority());
+
+        }
 
         // call the processPublishEvent method for processing
         dialogueIntegration.processPublishEvent(publishEvent, dialogueEvent);
