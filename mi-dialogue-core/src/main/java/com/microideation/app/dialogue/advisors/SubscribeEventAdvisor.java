@@ -2,7 +2,7 @@ package com.microideation.app.dialogue.advisors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microideation.app.dialogue.annotations.SubscribeEvent;
-import com.microideation.app.dialogue.authority.DialogueEventAuthorityAuth;
+import com.microideation.app.dialogue.authority.DialogueAuthorityManager;
 import com.microideation.app.dialogue.authority.EventAuthority;
 import com.microideation.app.dialogue.event.DialogueEvent;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -23,7 +23,7 @@ public class SubscribeEventAdvisor {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private DialogueEventAuthorityAuth dialogueEventAuthorityAuth;
+    private DialogueAuthorityManager dialogueAuthorityManager;
 
 
     @Pointcut(value="execution(public * *(..))")
@@ -54,7 +54,7 @@ public class SubscribeEventAdvisor {
             if ( eventAuthority != null ) {
 
                 // Call the method in the dialogueEventAuthorityAuth
-                dialogueEventAuthorityAuth.setEventAuthorityAuth(eventAuthority);
+                dialogueAuthorityManager.setEventAuthorityAuthContext(eventAuthority);
 
             }
 
