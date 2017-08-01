@@ -8,14 +8,20 @@ import com.microideation.app.dialogue.integration.Integration;
 import com.microideation.app.dialogue.integration.IntegrationUtils;
 import com.microideation.app.dialogue.support.exception.DialogueException;
 import com.microideation.app.dialogue.support.exception.ErrorCode;
+import org.aopalliance.aop.Advice;
 import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.config.RetryInterceptorBuilder;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
+import org.springframework.amqp.rabbit.retry.RepublishMessageRecoverer;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.retry.interceptor.RetryOperationsInterceptor;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PreDestroy;
@@ -26,9 +32,20 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created by sandheepgr on 18/6/16.
  */
 @Component("dialogueRabbitIntegration")
+@PropertySource("classpath:mi-dialogue-rabbitmq-.properties")
 public class DialogueRabbitIntegration implements Integration {
 
 
+    /**
+     * NOTE : For handling the properties of library and for overriding by an implementing client
+     * we need to have the specific properties put in a respective file and import using @PropertSource
+     * After that this property can be overridden by the  implementing project using application.yml or
+     * application.properties file.
+     * If we try to put the properties inside the application.yml / application.properties of the library,
+     * these will not be read in the implementing project ( No defaults taken from library )
+     *
+     * Refer to the mi-dialogue-rabbitmq-.propertie usage in this class
+     */
 
     @Autowired
     private RabbitTemplate rabbitTemplate;
@@ -44,6 +61,24 @@ public class DialogueRabbitIntegration implements Integration {
 
     @Autowired
     private Environment environment;
+
+    // Read the values for the rabbit retry settings
+
+
+    @Value("${dialogue.rabbit.retry.dlxname}")
+    private String dlxName;
+
+    @Value("${dialogue.rabbit.retry.maxattempts}")
+    private Integer maxAttempts;
+
+    @Value("${dialogue.rabbit.retry.initialinterval}")
+    private Long initialInterval;
+
+    @Value("${dialogue.rabbit.retry.multiplier}")
+    private Double multiplier;
+
+    @Value("${dialogue.rabbit.retry.maxinterval}")
+    private Long maxInterval;
 
 
     @Resource
@@ -180,10 +215,45 @@ public class DialogueRabbitIntegration implements Integration {
 
         }
 
+        // Define the dead-letter binding
+        defineDeadletterBinding(queue,persist);
+
+        // Return the queue
+        return queue;
+
+    }
+
+
+    /**
+     * Method to define the deadletter binding for the queue
+     * The idea is to bind the deadletter exchange with the same queue
+     * using the queue name as the routing key
+     * In this way we can route the messages to the same queue
+     * If we route to the same exchange using original routing key, all other queues bound
+     * with same criteria will also receive the republish
+     *
+     * @param queue     : The queue for which the deadletter need to be defined
+     * @param persist   : Do we need to persist the queue ( durable queue )
+     *
+     * @return          : Return the queue
+     */
+    private Queue defineDeadletterBinding(Queue queue, boolean persist) {
+
+        // Create a Direct binding with the routing key as the queue name
+        // This is for the failure republish to specific queue
+        DirectExchange directExchange = new DirectExchange(dlxName);
+
+        //declare the exchange
+        amqpAdmin.declareExchange(directExchange);
+
+        //add binding for queue and exchange
+        amqpAdmin.declareBinding(BindingBuilder.bind(queue).to(directExchange).with(queue.getName()));
+
         //  return the queue
         return queue;
 
     }
+
 
     /**
      * Method to create the SimpleMessageListener object for the queue for subscribing
@@ -224,8 +294,7 @@ public class DialogueRabbitIntegration implements Integration {
         // If the queue already contains the listener, then return the instance
         if ( rabbitContainers.containsKey(queueName) ) {
 
-            // TO-DO : Throw the execption that this container cannot have more than
-            // one subscriber
+            // Return the queue reference from the list
             return rabbitContainers.get(queueName);
 
         }
@@ -244,6 +313,7 @@ public class DialogueRabbitIntegration implements Integration {
         simpleMessageListenerContainer.setQueueNames(queueName);
         simpleMessageListenerContainer.setConcurrentConsumers(5);
         simpleMessageListenerContainer.setMessageListener(messageListenerAdapter);
+        simpleMessageListenerContainer.setAdviceChain(new Advice[] {retryInterceptor(dlxName,queueName)});
         simpleMessageListenerContainer.afterPropertiesSet();
 
         //start the receiver container
@@ -410,4 +480,27 @@ public class DialogueRabbitIntegration implements Integration {
 
     }
 
+
+    /**
+     * Method to build the retry interceptor for the rabbitmq listener
+     * If the listener throws and exception,the retry goes on based on the
+     * settings specified in the mi-dialogue-rabbitmq-.properties file.
+     *
+     * When the retries are exhausted, the item in put back into the same queue
+     * for processing. The routing key used would be the key name and this would
+     * trigger the deadletter binding for the queue
+     *
+     * @param errorExchange : The name of the exchange ( deadletter exchange )
+     * @param routingKey    : The routing key ( the name of the queue )
+     * @return
+     */
+    private RetryOperationsInterceptor retryInterceptor(String errorExchange,String routingKey) {
+
+        // Build and return the Interceptor
+        return RetryInterceptorBuilder.stateless()
+                .maxAttempts(maxAttempts)
+                .backOffOptions(initialInterval, multiplier, maxInterval)
+                .recoverer(new RepublishMessageRecoverer(rabbitTemplate,errorExchange,routingKey))
+                .build();
+    }
 }
