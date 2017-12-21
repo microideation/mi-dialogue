@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
 public class AuthorityConfig {
 
     @Bean
-    @ConditionalOnMissingBean(type = "dialogueAuthorityManager")
+    @ConditionalOnMissingBean(DialogueAuthorityManager.class)
     public DialogueAuthorityManager dialogueAuthorityManager(){
 
         return new DialogueAuthorityManagerImpl();

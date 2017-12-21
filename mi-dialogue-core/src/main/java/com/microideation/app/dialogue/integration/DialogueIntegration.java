@@ -36,7 +36,6 @@ public class DialogueIntegration {
 
 
 
-
     /**
      * Method to get the integration for the eventStore and call the publishToChannel method
      *
@@ -63,8 +62,6 @@ public class DialogueIntegration {
     /**
      * Method to add the listener for the subscriber method
      *
-     * @param method        : The method object on which the subscribeEvent is annotated
-     * @param subscribeEvent: The SubscribeEvent annotation object
      * @param listenerClass : The ListenerClass in which the method resides
      *
      */
