@@ -5,17 +5,16 @@
 
 	<groupId>com.microideation.app.dialogue</groupId>
 	<artifactId>mi-dialogue-redis</artifactId>
-	<version>0.0.5</version>
+	<version>0.0.6</version>
 	<packaging>jar</packaging>
 
 	<name>mi-dialogue-redis</name>
 	<description>Demo project for Spring Boot</description>
 
 	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.5.7.RELEASE</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<groupId>com.microideation.app.dialogue</groupId>
+		<artifactId>mi-dialogue</artifactId>
+		<version>0.0.1</version>
 	</parent>
 
     <repositories>
@@ -43,7 +42,7 @@
         <dependency>
             <groupId>com.microideation.app.dialogue</groupId>
             <artifactId>mi-dialogue-core</artifactId>
-            <version>0.0.5</version>
+            <version>0.0.6</version>
         </dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

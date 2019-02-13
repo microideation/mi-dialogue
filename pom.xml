@@ -5,7 +5,7 @@
 
 	<groupId>com.microideation.app.dialogue</groupId>
 	<artifactId>mi-dialogue</artifactId>
-	<version>0.0.5</version>
+	<version>0.0.1</version>
 	<packaging>pom</packaging>
 
 	<name>mi-dialogue</name>

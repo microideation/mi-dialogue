@@ -311,7 +311,7 @@ public class DialogueRabbitIntegration implements Integration {
         SimpleMessageListenerContainer simpleMessageListenerContainer = new SimpleMessageListenerContainer();
         simpleMessageListenerContainer.setConnectionFactory(connectionFactory);
         simpleMessageListenerContainer.setQueueNames(queueName);
-        simpleMessageListenerContainer.setConcurrentConsumers(5);
+        simpleMessageListenerContainer.setConcurrentConsumers(subscribeEvent.concurrentConsumers());
         simpleMessageListenerContainer.setMessageListener(messageListenerAdapter);
         simpleMessageListenerContainer.setAdviceChain(new Advice[] {retryInterceptor(dlxName,queueName)});
         simpleMessageListenerContainer.afterPropertiesSet();

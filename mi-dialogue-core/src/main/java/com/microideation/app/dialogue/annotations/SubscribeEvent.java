@@ -14,9 +14,19 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD) //can use in method only.
 public @interface SubscribeEvent {
 
+	// The event store from which the event need to be subscribed to
     EventStore eventStore();
+    
+    // Name of the channel
     String channelName();
+    
+    // Name of the event
     String eventName() default "";
+    
+    // Flag whether authentication need be applied if available
     boolean isSetAuthentication() default true;
+    
+    // Concurrenct consumers in the case of rabbitmq
+    int concurrentConsumers() default 5;
 
 }
