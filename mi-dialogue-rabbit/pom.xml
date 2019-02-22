@@ -11,10 +11,14 @@
 	<name>mi-dialogue-rabbit</name>
 	<description>Demo project for Spring Boot</description>
 
+	<!-- IMPORTANT: We cannot change the parent to the mi-dialogue as this is creating
+	     issues when uploaded as library to jfrog.
+	-->
 	<parent>
-		<groupId>com.microideation.app.dialogue</groupId>
-		<artifactId>mi-dialogue</artifactId>
-		<version>0.0.1</version>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>1.5.7.RELEASE</version>
+		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
     <repositories>
