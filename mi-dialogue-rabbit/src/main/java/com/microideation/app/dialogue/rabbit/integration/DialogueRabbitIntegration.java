@@ -91,7 +91,6 @@ public class DialogueRabbitIntegration implements Integration {
     private ConcurrentHashMap<String,SimpleMessageListenerContainer> rabbitContainers;
 
 
-
     /**
      * Method to build the queue using the autowired rabbit configuration
      *
@@ -223,38 +222,6 @@ public class DialogueRabbitIntegration implements Integration {
 
     }
 
-
-    /**
-     * Method to define the deadletter binding for the queue
-     * The idea is to bind the deadletter exchange with the same queue
-     * using the queue name as the routing key
-     * In this way we can route the messages to the same queue
-     * If we route to the same exchange using original routing key, all other queues bound
-     * with same criteria will also receive the republish
-     *
-     * @param queue     : The queue for which the deadletter need to be defined
-     * @param persist   : Do we need to persist the queue ( durable queue )
-     *
-     * @return          : Return the queue
-     */
-    private Queue defineDeadletterBinding(Queue queue, boolean persist) {
-
-        // Create a Direct binding with the routing key as the queue name
-        // This is for the failure republish to specific queue
-        DirectExchange directExchange = new DirectExchange(dlxName);
-
-        //declare the exchange
-        amqpAdmin.declareExchange(directExchange);
-
-        //add binding for queue and exchange
-        amqpAdmin.declareBinding(BindingBuilder.bind(queue).to(directExchange).with(queue.getName()));
-
-        //  return the queue
-        return queue;
-
-    }
-
-
     /**
      * Method to create the SimpleMessageListener object for the queue for subscribing
      *
@@ -324,56 +291,6 @@ public class DialogueRabbitIntegration implements Integration {
 
         // Return the listener
         return simpleMessageListenerContainer;
-
-    }
-
-
-    /**
-     * Method to create the queue name in the following format
-     * {channelname}-sub-{servicename}.{class}.{method}-{event}
-     *
-     * @param listener      : The listener object subscribed to the event
-     * @param methodName    : The name of the method that is annotated with
-     * @param channelName   : The channel to which queue is listening
-     * @param eventName     : The name of the event if subscribed to an event
-     *
-     * @return              : Return the queue name based on the format with passed fields
-     *                        If the service name is not specified, this will throw an error.
-     */
-    private String getQueueName(Object listener,String methodName, String channelName,String eventName) {
-
-        // Get the service name
-        String serviceName = environment.getProperty("spring.application.name");
-
-        // If the name is null or empty, then don't start the queue
-        if ( serviceName == null || serviceName.isEmpty() || serviceName.equals("spring.application.name")) {
-
-            // Throw the exception
-            throw new DialogueException(ErrorCode.ERR_SERVICE_NAME_NOT_PROVIDED,
-                    "The service name is not set. Please set the spring.application.name property in application.properties / application.yml file");
-
-
-        }
-
-        // Remove spaces from service name
-        serviceName = serviceName.replaceAll(" ","");
-
-        // Get the class name
-        String className = AopUtils.getTargetClass(listener).getSimpleName();
-
-        // Set the queueName to be the
-        String queueName = channelName +"-sub-"+serviceName.toLowerCase()+"."+className.toLowerCase()+"."+methodName.toLowerCase();
-
-        // If the eventName is present, then add it to the queuename
-        if ( eventName != null && !eventName.equals("")) {
-
-            // add it to the queuename
-            queueName += "-listen-"+eventName.toLowerCase();
-
-        }
-
-        // Return the queueName
-        return queueName;
 
     }
 
@@ -479,7 +396,86 @@ public class DialogueRabbitIntegration implements Integration {
         return true;
 
     }
-
+    
+    
+    /**
+     * Method to create the queue name in the following format
+     * {channelname}-sub-{servicename}.{class}.{method}-{event}
+     *
+     * @param listener      : The listener object subscribed to the event
+     * @param methodName    : The name of the method that is annotated with
+     * @param channelName   : The channel to which queue is listening
+     * @param eventName     : The name of the event if subscribed to an event
+     *
+     * @return              : Return the queue name based on the format with passed fields
+     *                        If the service name is not specified, this will throw an error.
+     */
+    private String getQueueName(Object listener,String methodName, String channelName,String eventName) {
+        
+        // Get the service name
+        String serviceName = environment.getProperty("spring.application.name");
+        
+        // If the name is null or empty, then don't start the queue
+        if ( serviceName == null || serviceName.isEmpty() || serviceName.equals("spring.application.name")) {
+            
+            // Throw the exception
+            throw new DialogueException(ErrorCode.ERR_SERVICE_NAME_NOT_PROVIDED,
+                    "The service name is not set. Please set the spring.application.name property in application.properties / application.yml file");
+            
+            
+        }
+        
+        // Remove spaces from service name
+        serviceName = serviceName.replaceAll(" ","");
+        
+        // Get the class name
+        String className = AopUtils.getTargetClass(listener).getSimpleName();
+        
+        // Set the queueName to be the
+        String queueName = channelName +"-sub-"+serviceName.toLowerCase()+"."+className.toLowerCase()+"."+methodName.toLowerCase();
+        
+        // If the eventName is present, then add it to the queuename
+        if ( eventName != null && !eventName.equals("")) {
+            
+            // add it to the queuename
+            queueName += "-listen-"+eventName.toLowerCase();
+            
+        }
+        
+        // Return the queueName
+        return queueName;
+        
+    }
+    
+    /**
+     * Method to define the deadletter binding for the queue
+     * The idea is to bind the deadletter exchange with the same queue
+     * using the queue name as the routing key
+     * In this way we can route the messages to the same queue
+     * If we route to the same exchange using original routing key, all other queues bound
+     * with same criteria will also receive the republish
+     *
+     * @param queue     : The queue for which the deadletter need to be defined
+     * @param persist   : Do we need to persist the queue ( durable queue )
+     *
+     * @return          : Return the queue
+     */
+    private Queue defineDeadletterBinding(Queue queue, boolean persist) {
+        
+        // Create a Direct binding with the routing key as the queue name
+        // This is for the failure republish to specific queue
+        DirectExchange directExchange = new DirectExchange(dlxName);
+        
+        //declare the exchange
+        amqpAdmin.declareExchange(directExchange);
+        
+        //add binding for queue and exchange
+        amqpAdmin.declareBinding(BindingBuilder.bind(queue).to(directExchange).with(queue.getName()));
+        
+        //  return the queue
+        return queue;
+        
+    }
 
     /**
      * Method to build the retry interceptor for the rabbitmq listener

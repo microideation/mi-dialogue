@@ -13,9 +13,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
-import org.springframework.kafka.listener.config.ContainerProperties;
-import org.springframework.kafka.support.TopicPartitionInitialOffset;
-import org.springframework.messaging.MessageChannel;
 
 import java.util.HashMap;
 import java.util.Map;

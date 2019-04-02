@@ -13,8 +13,8 @@ import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.kafka.inbound.KafkaMessageDrivenChannelAdapter;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
-import org.springframework.kafka.listener.config.ContainerProperties;
 import org.springframework.kafka.support.TopicPartitionInitialOffset;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandler;
@@ -46,7 +46,6 @@ public class DialogueKafkaIntegration implements Integration {
 
     @Resource
     private ConcurrentHashMap<String,KafkaMessageListenerContainer> kafkaContainers;
-
 
 
     @Override
@@ -84,19 +83,19 @@ public class DialogueKafkaIntegration implements Integration {
 
         // Get the method by name
         Method method = ReflectionUtils.findMethod(finalClass,methodName,null);
-
+        
         // Create a listener
         KafkaMessageListenerContainer<String,DialogueEvent> kafkaMessageListenerContainer =
                 new KafkaMessageListenerContainer<>(consumerFactory,
                         new ContainerProperties(new TopicPartitionInitialOffset(channelName,0)));
-
+        
         // Create the adapter
         KafkaMessageDrivenChannelAdapter<String,DialogueEvent> kafkaMessageDrivenChannelAdapter =
                 new KafkaMessageDrivenChannelAdapter<>(kafkaMessageListenerContainer);
 
         // Create the channel
         SubscribableChannel receiverChannel = getReceiverChannel();
-
+        
         // Set the handler
         receiverChannel.subscribe(new MessageHandler() {
             @Override
@@ -118,15 +117,6 @@ public class DialogueKafkaIntegration implements Integration {
 
 
     }
-
-
-    protected SubscribableChannel getReceiverChannel() {
-
-        return new DirectChannel();
-
-    }
-
-
 
     @Override
     public void stopListeners() {
@@ -160,6 +150,12 @@ public class DialogueKafkaIntegration implements Integration {
         return true;
 
     }
-
+   
+    
+    protected SubscribableChannel getReceiverChannel() {
+        
+        return new DirectChannel();
+        
+    }
 
 }
