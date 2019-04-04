@@ -36,12 +36,12 @@ public class DialogueKafkaConfiguration {
 
 
     @Bean
-    public KafkaTemplate<String, DialogueEvent> kafkaTemplate() {
-        return new KafkaTemplate<>(producerFactory());
+    public KafkaTemplate<?,?> kafkaTemplate() {
+        return new KafkaTemplate(kafkaProducerFactory());
     }
 
     @Bean
-    public ProducerFactory<String, DialogueEvent> producerFactory() {
+    public ProducerFactory<?,?> kafkaProducerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, this.brokerAddress);
         props.put(ProducerConfig.RETRIES_CONFIG, 0);
@@ -52,9 +52,13 @@ public class DialogueKafkaConfiguration {
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, DialogueEventSerializer.class);
         return new DefaultKafkaProducerFactory<>(props);
     }
-
+    
+    /**
+     * IMPORTANT: This method need to be of type <?,?> to avoid startup error
+     * caused by the KafkaAutoConfiguration class of Spring
+     */
     @Bean
-    public ConsumerFactory<String, DialogueEvent> consumerFactory() {
+    public ConsumerFactory<?,?> kafkaConsumerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, this.brokerAddress);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, groupIdConfig);

@@ -1,5 +1,9 @@
 package com.microideation.app.dialogue.redis.integration;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.microideation.app.dialogue.annotations.PublishEvent;
 import com.microideation.app.dialogue.annotations.SubscribeEvent;
 import com.microideation.app.dialogue.event.DialogueEvent;
@@ -73,11 +77,11 @@ public class RedisIntegration implements Integration {
 
         // Check if the subscriber has got eventname specified, if yes, we need to
         // show error message as listening to specific key is not supported as of now
-        if ( subscribeEvent.eventName() != null || !subscribeEvent.eventName().equals("") ) {
+        if ( subscribeEvent.eventName() != null && !subscribeEvent.eventName().equals("") ) {
 
             // Throw the exception
             throw new DialogueException(ErrorCode.ERR_EVENT_SPECIFIC_SUBSCRIBER_NOT_SUPPORTED,
-                    "Event name specific listening is not supported in Kafka integration");
+                    "Event name specific listening is not supported in Redis integration");
 
         }
 
@@ -101,7 +105,7 @@ public class RedisIntegration implements Integration {
 
         // Create the MessageListenerAdapter
         MessageListenerAdapter messageListenerAdapter = new MessageListenerAdapter(listenerClass,methodName);
-        messageListenerAdapter.setSerializer(new Jackson2JsonRedisSerializer<>(DialogueEvent.class));
+        messageListenerAdapter.setSerializer(getRedisSerializer());
         messageListenerAdapter.afterPropertiesSet();
 
         // Create the listener container
@@ -166,6 +170,31 @@ public class RedisIntegration implements Integration {
         // Return true finally
         return true;
 
+    }
+    
+    
+    /**
+     * Method to build and return the Jackson2JsonRedisSerializer
+     * This will build a object mapper with properties required
+     * for the redis integration
+     *
+     * @return : Return the serializer with the required properties
+     */
+    private Jackson2JsonRedisSerializer<DialogueEvent> getRedisSerializer() {
+    
+        ObjectMapper mapper= new ObjectMapper()
+                .registerModule(new JavaTimeModule())
+                .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        
+        // Create the serialized
+        Jackson2JsonRedisSerializer<DialogueEvent> serializer = new Jackson2JsonRedisSerializer<>(DialogueEvent.class);
+        
+        // Set the properties
+        serializer.setObjectMapper(mapper);
+        
+        // return the serializer
+        return serializer;
     }
 
 

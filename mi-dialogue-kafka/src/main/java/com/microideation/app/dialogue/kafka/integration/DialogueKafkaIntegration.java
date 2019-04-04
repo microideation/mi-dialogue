@@ -35,13 +35,13 @@ public class DialogueKafkaIntegration implements Integration {
 
 
     @Autowired
-    private ConsumerFactory<String,DialogueEvent> consumerFactory;
+    private ConsumerFactory kafkaConsumerFactory;
 
     @Autowired
     private IntegrationUtils integrationUtils;
 
     @Autowired
-    private KafkaTemplate<String,DialogueEvent> kafkaTemplate;
+    private KafkaTemplate kafkaTemplate;
 
 
     @Resource
@@ -67,7 +67,7 @@ public class DialogueKafkaIntegration implements Integration {
 
         // Check if the subscriber has got eventname specified, if yes, we need to
         // show error message as listening to specific key is not supported as of now
-        if ( subscribeEvent.eventName() != null || !subscribeEvent.eventName().equals("") ) {
+        if ( subscribeEvent.eventName() != null && !subscribeEvent.eventName().equals("") ) {
 
             // Throw the exception
             throw new DialogueException(ErrorCode.ERR_EVENT_SPECIFIC_SUBSCRIBER_NOT_SUPPORTED,
@@ -86,7 +86,7 @@ public class DialogueKafkaIntegration implements Integration {
         
         // Create a listener
         KafkaMessageListenerContainer<String,DialogueEvent> kafkaMessageListenerContainer =
-                new KafkaMessageListenerContainer<>(consumerFactory,
+                new KafkaMessageListenerContainer<>(kafkaConsumerFactory,
                         new ContainerProperties(new TopicPartitionInitialOffset(channelName,0)));
         
         // Create the adapter
@@ -100,7 +100,8 @@ public class DialogueKafkaIntegration implements Integration {
         receiverChannel.subscribe(new MessageHandler() {
             @Override
             public void handleMessage(Message<?> message) throws MessagingException {
-
+    
+                // IMPORTANT: This will throw error if the method is inside an inner class
                 ReflectionUtils.invokeMethod(method,listenerClass,message.getPayload());
 
             }
@@ -134,15 +135,15 @@ public class DialogueKafkaIntegration implements Integration {
     public boolean isIntegrationAvailable() {
 
         // check if the beans are available
-        if ( consumerFactory == null ) {
+        if ( kafkaConsumerFactory == null ) {
 
             // Throw the exception
-            throw new DialogueException(ErrorCode.ERR_INTEGRATION_NOT_AVAILABLE,"consumerFactory bean is not available");
+            throw new DialogueException(ErrorCode.ERR_INTEGRATION_NOT_AVAILABLE,"kafkaConsumerFactory bean is not available");
 
         } else if ( kafkaTemplate == null ) {
 
             // Throw the exception
-            throw new DialogueException(ErrorCode.ERR_INTEGRATION_NOT_AVAILABLE,"consumerFactory bean is not available");
+            throw new DialogueException(ErrorCode.ERR_INTEGRATION_NOT_AVAILABLE,"kafkaConsumerFactory bean is not available");
 
         }
 
