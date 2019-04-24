@@ -149,5 +149,72 @@ This module provides the event communication over the Kafka cluster.
 * Defines a DirectChannel using the channel name 
 * Associates the channel subscribe method to invoke the annotated class method
 
+## Passing authentication information in events
+Most of the event transfer mechanisms are stateless and does not carry authority or the authentication. Mi-Dialogue allows to configure events to be enriched with authentication from source and then use the same authentication and authority at the subscriber. 
 
+### Configuring authentication 
+We need to configure a bean on the publisher side to have the authentication and principal to be passed in the event.
 
+Define a bean of DialogueAuthorityManager  in a configuration class as below:
+
+``` java
+@Configuration
+@Slf4j
+public class DialogueAuthorityConfig {
+
+    @Primary
+    @Bean
+    public DialogueAuthorityManager dialogueAuthorityManager() {
+
+        return new DialogueAuthorityManagerImpl();
+    }
+
+    /**
+     * Class implementing the DialogueAuthorityManager
+     */
+    private class DialogueAuthorityManagerImpl implements DialogueAuthorityManager {
+
+        @Override
+        public EventAuthority getEventAuthority() {
+
+            // Overide the method and build the eventAuthority 
+            // with the information required by your application.
+
+            // Create the EventAuthority object
+            EventAuthority eventAuthority = new EventAuthority();
+
+            // Set the fields 
+            eventAuthority.setPrincipal(yourSessionObj.getUsername());
+
+            // Set the extra params
+            eventAuthority.setExtraParam("ownerRef",yourSessionObj.getOwnerRef());
+            eventAuthority.setExtraParam("userNo",yourSessionObj.getUserNo());
+            eventAuthority.setExtraParam("userType",yourSessionObj.getUserType());
+
+            // Return the eventAuthority object
+            return eventAuthority;
+        }
+
+        @Override
+        public void setEventAuthorityAuthContext(EventAuthority eventAuthority) {
+
+            // Override this method and implement the logic to set the authentication  / security context from the eventAuthority received.
+            // This method is called when the subscriber wants to set authentication when an event with authority is received.
+
+            /** Sample setup **/    
+            // Create the authentication using eventAuthority
+            Authentication auth = new UsernamePasswordAuthenticationToken(eventAuthority, "", Arrays.asList(new SimpleGrantedAuthority("EVENT_AUTHORITY")));
+
+            // Set the authentication
+            SecurityContextHolder.getContext().setAuthentication(auth);
+        }
+    }
+}
+
+```
+
+In the above snippet, DialogueAuthorityManagerImpl provides implementation for the DialogueAuthorityManager by overriding the getEventAuthority() and setEventAuthorityAuthContext() methods.
+
+When an event is being published, Mi-Dialogue will look for the bean of type DialogueAuthorityManager and if found, will call the getEventAuthority() to get the EventAuthority object. If a valid EventAuthority is returned, it will be added to the event while publishing.
+
+Similarly, on the Subscriber side, we need to make sure that the isSetAuthentication field is set to true in the annotation. This will allow the subscriber to look for the eventAuthority object in the recepient event and then call the setEventAuthorityAuthContext of the DialogueAuthorityManager bean for setting the authentication based on your implementation. 
