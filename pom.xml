@@ -28,6 +28,7 @@
 		<module>mi-dialogue-rabbit</module>
         <module>mi-dialogue-kafka</module>
 		<module>mi-dialogue-domain</module>
+		<module>mi-dialogue-rsocket</module>
 	</modules>
 	
 	<build>
