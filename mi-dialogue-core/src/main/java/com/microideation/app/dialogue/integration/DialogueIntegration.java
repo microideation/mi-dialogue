@@ -33,7 +33,10 @@ public class DialogueIntegration {
     @Autowired(required = false)
     @Qualifier(value = "dialogueKafkaIntegration")
     private Integration kafkaIntegration;
-
+    
+    @Autowired(required = false)
+    @Qualifier(value = "dialogueRSocketIntegration")
+    private Integration rsocketIntegration;
 
 
     /**
@@ -138,8 +141,22 @@ public class DialogueIntegration {
 
                 // Return the kafka integration
                 return kafkaIntegration;
+                
+                
+            // Processing for the RSocket
+            case RSOCKET:
+                
+                // Check if the integration is available
+                if ( rsocketIntegration == null ) {
+                    
+                     throw new DialogueException(ErrorCode.ERR_INTEGRATION_NOT_AVAILABLE,
+                            "RSocket integration is not available. Please make sure that the mi-dialogue-rsocket is added as dependency");
+                    
+                }
 
-
+                // Return the rsocket integration
+                return rsocketIntegration;
+                
             default:
 
                throw new DialogueException(ErrorCode.ERR_INTEGRATION_NOT_AVAILABLE, "No integration for event store : " + eventStore.name());

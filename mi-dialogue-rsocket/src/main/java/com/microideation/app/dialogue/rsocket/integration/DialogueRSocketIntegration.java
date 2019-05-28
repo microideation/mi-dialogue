@@ -8,17 +8,20 @@ import com.microideation.app.dialogue.integration.Integration;
 import com.microideation.app.dialogue.integration.IntegrationUtils;
 import com.microideation.app.dialogue.support.exception.DialogueException;
 import com.microideation.app.dialogue.support.exception.ErrorCode;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
+import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.annotation.Resources;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component("dialogueRSocketIntegration")
+@Slf4j
 public class DialogueRSocketIntegration implements Integration {
 
 	
@@ -51,6 +54,9 @@ public class DialogueRSocketIntegration implements Integration {
 		// Check if null
 		if ( publisher == null ) {
 			
+			// Log the info
+			log.info("publishToChannel -> No publisher for " + channelName + " , creating new ");
+			
 			// Create a new publisher
 			publisher = new MiRSocketPublisher(channelName,mapper);
 			
@@ -59,6 +65,20 @@ public class DialogueRSocketIntegration implements Integration {
 			
 			// Add to the map
 			miRSocketPublishers.put(channelName,publisher);
+		
+			// Log
+			log.info("publishToChannel -> Created new publisher for : " + channelName);
+			
+		}
+		
+		// Check if the publisher is connected
+		if ( !publisher.isConnected() ) {
+			
+			// Log
+			log.info("publishToChannel -> Reconnecting to " + channelName);
+			
+			// connect
+			publisher.connectSocket();
 			
 		}
 		
@@ -94,6 +114,9 @@ public class DialogueRSocketIntegration implements Integration {
 			throw new DialogueException(ErrorCode.ERR_DUPLICATE_SUBSCRIBER_NOT_SUPPORTED,
 					"RSocket only allows single subscriber instance. " +channelName + " has multiple declaration");
 		}
+	
+		// Log the info
+		log.info("registerSubscriber -> Registering subscriber for address: " + channelName);
 		
 		// Get the finalClass for the listenerClass
 		Class finalClass = AopProxyUtils.ultimateTargetClass(listenerClass);
@@ -106,6 +129,9 @@ public class DialogueRSocketIntegration implements Integration {
 	
 		// Start listening
 		subscriber.startListening();
+	
+		// log
+		log.info("registerSubscriber -> Subscriber listening for : " + channelName);
 		
 		// Add to the map
 		miRSocketSubscribers.put(channelName,subscriber);
@@ -143,6 +169,16 @@ public class DialogueRSocketIntegration implements Integration {
 		// Return
 		return true;
 	}
+
+	@PreDestroy
+	public void destroy() {
+
+		// Log
+		log.info("RSocketIntegration unloading - stopping listeners");
 	
+		// Stop the listeners
+		stopListeners();
+		
+	}
 	
 }

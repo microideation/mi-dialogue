@@ -7,6 +7,7 @@ public enum EventStore {
 
     RABBITMQ,
     REDIS,
+    RSOCKET,
     KAFKA;
 
 }

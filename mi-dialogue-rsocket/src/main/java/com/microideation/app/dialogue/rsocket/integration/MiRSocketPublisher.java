@@ -26,6 +26,15 @@ public class MiRSocketPublisher {
 	
 	
 	/**
+	 * Method to check if the socket is connected
+	 * @return : Return the connect status
+	 */
+	public boolean isConnected() {
+		
+		return this.socket != null && !this.socket.isDisposed();
+	}
+	
+	/**
 	 * Method to connect the socket to the address specified
 	 * If there is any exception only logging is done for now
 	 */
@@ -78,7 +87,7 @@ public class MiRSocketPublisher {
 			strJson = mapper.writeValueAsString(event);
 			
 			// Send the data using fire and forget
-			this.socket.fireAndForget(DefaultPayload.create(strJson));
+			this.socket.fireAndForget(DefaultPayload.create(strJson)).block();
 			
 		} catch (Exception e) {
 			
