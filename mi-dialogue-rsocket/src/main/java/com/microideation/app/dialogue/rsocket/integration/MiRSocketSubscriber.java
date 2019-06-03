@@ -23,6 +23,10 @@ public class MiRSocketSubscriber {
 
 	private String addr;
 	
+	private boolean isConnected = false;
+	
+	private boolean isShutdown = false;
+	
 	private ObjectMapper mapper;
 	
 	private Object listenerClass;
@@ -40,9 +44,24 @@ public class MiRSocketSubscriber {
 	
 	
 	/**
+	 * Method to check if the server is listening
+	 * @return : Return the connect status
+	 */
+	public boolean isConnected() {
+		
+		return this.server != null && isConnected;
+	}
+	
+	
+	/**
 	 * Method to dispose the socket connection
 	 */
 	public void dispose() {
+		
+		// Set the isShutdown to true
+		isShutdown = true;
+		
+		// Dispose the server
 		this.server.dispose();
 	}
 
@@ -64,16 +83,52 @@ public class MiRSocketSubscriber {
 					.transport(TcpServerTransport.create(splitAddress[0], Integer.parseInt(splitAddress[1])))
 					.start()
 					.subscribe();
+			
+			// Set the isConnected to true
+			isConnected = true;
+			
 		} catch (Exception e) {
 			
 			// Log the error
 			log.error("connectSocket -> Exception while connecting to "+addr+ " Error : " + e.getMessage());
 			
+			// Set the isConnected to false;
+			isConnected = false;
+			
 			// Print the stacktrace
 			e.printStackTrace();
 		}
 	}
-
+	
+	
+	/**
+	 * This method will be used to refresh the connection is the
+	 * connection is already disposed off unintentionally
+	 */
+	public void refreshConnection() {
+	
+		// If we are shutting down on request, we don't need to reconnect
+		if ( isShutdown ) {
+			
+			// Log the warning
+			log.trace("refreshConnection -> Shutdown is progress.. Refresh cancelled");
+			
+			// Return
+			return;
+		}
+	
+		// Check if disposed
+		if ( !isConnected() ) {
+		
+			// Log the info
+			log.info("refreshConnection -> Subscriber @ " + addr + " not listening, starting again");
+			
+			// Start listening
+			startListening();
+			
+		}
+	}
+	
 	
 	/**
 	 * Inner class extending the AbstractRocket

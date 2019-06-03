@@ -11,6 +11,7 @@ import com.microideation.app.dialogue.support.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
@@ -153,7 +154,7 @@ public class DialogueRSocketIntegration implements Integration {
 				.stream()
 				.forEach(e -> e.getValue().dispose());
 	}
-	
+
 	@Override
 	public boolean isIntegrationAvailable() {
 	
@@ -180,5 +181,29 @@ public class DialogueRSocketIntegration implements Integration {
 		stopListeners();
 		
 	}
+
+	@Scheduled(cron = "${mi-dialogue.rsocket.subscriber.refresh.interval}")
+	public void refreshSubscriberSession() {
 	
+		// Log the starting of the job
+		log.trace("refreshSubscriberSession -> Running subscriber connection refresh");
+		
+		// Check if the subscribers are defined
+		if ( miRSocketSubscribers == null ||
+				miRSocketSubscribers.isEmpty() ) {
+			
+			// Log a trace message
+			log.trace("refreshSubscriberSession -> No subscribers defined.. No action taken");
+			
+			// Return
+			return;
+		}
+		
+		// Stream the subscribers and check if they are disposed
+		miRSocketSubscribers.entrySet()
+				.stream()
+				.peek(e -> log.info("refreshSubscriberSession -> Running refresh for :" + e.getKey()))
+				.forEach(e -> e.getValue().refreshConnection());
+				
+	}
 }

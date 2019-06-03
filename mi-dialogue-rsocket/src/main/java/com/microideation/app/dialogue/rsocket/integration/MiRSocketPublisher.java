@@ -61,7 +61,6 @@ public class MiRSocketPublisher {
 		}
 		
 	}
-
 	
 	/**
 	 * Method to dispose the connect
@@ -69,7 +68,6 @@ public class MiRSocketPublisher {
 	public void dispose() {
 		this.socket.dispose();
 	}
-
 	
 	/**
 	 * Method to publish the data to the socket using fireAndForget
