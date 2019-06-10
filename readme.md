@@ -1,7 +1,7 @@
 
 # Mi-Dialogue
 
-Mi-Dialogue is set of spring based libraries that provides out-of-the-box features for microservices communication ( or dialogue for that matter). Following are the main features supported.
+Mi-Dialogue is a set of Java spring-boot based libraries that provides a simple, unified, channel agnostic microservices event communication mechanism over different channels. Following are the main features supported.
 
 1. Event based communication over Redis, Kafka and RabbitMQ
 2. Domain change replications on different services
