@@ -5,7 +5,7 @@
 
 	<groupId>com.microideation.app.dialogue</groupId>
 	<artifactId>mi-dialogue</artifactId>
-	<version>0.0.2</version>
+	<version>0.0.3</version>
 	<packaging>pom</packaging>
 
 	<name>mi-dialogue</name>
@@ -28,6 +28,7 @@
 		<module>mi-dialogue-rabbit</module>
         <module>mi-dialogue-kafka</module>
 		<module>mi-dialogue-domain</module>
+		<module>mi-dialogue-rsocket</module>
 	</modules>
 	
 	<build>

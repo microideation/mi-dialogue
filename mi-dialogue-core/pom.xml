@@ -5,7 +5,7 @@
 
     <groupId>com.microideation.app.dialogue</groupId>
     <artifactId>mi-dialogue-core</artifactId>
-    <version>0.0.8</version>
+    <version>0.0.9</version>
     <packaging>jar</packaging>
 
     <name>mi-dialogue-core</name>
@@ -68,8 +68,7 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.16.10</version>
-            <scope>provided</scope>
+            <version>${lombok.version}</version>
         </dependency>
     </dependencies>
 

@@ -10,15 +10,21 @@ Mi-Dialogue is a set of Java spring-boot based libraries that provides a simple,
 
 ## Table of Contents
 
-- [Why Mi-Dialogue ?](#why-mi-dialogue)
-- [Modules in Mi-Dialogue](#modules-in-mi-dialogue)
+- [Mi-Dialogue](#mi-dialogue)
+  - [Table of Contents](#table-of-contents)
+  - [Why Mi-Dialogue ?](#why-mi-dialogue)
+  - [Modules in Mi-Dialogue](#modules-in-mi-dialogue)
     - [mi-dialogue-core](#mi-dialogue-core)
-        - [Publishing an Event](#publishing-an-event)
-        - [Subscribing to an event](#subscribing-to-an-event)
+      - [Publishing an Event](#publishing-an-event)
+      - [Subscribing to an event](#subscribing-to-an-event)
     - [mi-dialogue-rabbit](#mi-dialogue-rabbit)
-        - [Conventions](#conventions)
+      - [Conventions](#conventions)
     - [mi-dialogue-redis](#mi-dialogue-redis)
     - [mi-dialogue-kafka](#mi-dialogue-kafka)
+    - [mi-dialogue-rsocket](#mi-dialogue-rsocket)
+  - [Passing authentication information in events](#passing-authentication-information-in-events)
+    - [Configuring authentication](#configuring-authentication)
+  
 
 ## Why Mi-Dialogue ?
 Mi-Dialogue was created out requirement for a event based communication without the hassles of going through the store implementation or the spring-integration process. 
@@ -127,6 +133,7 @@ Provides the implementation logic for the event transmission through rabbitmq as
 * Routing based on event names as routing keys
 * Consumer configuration based on annotation params
 * Requeue of event to the end of queue on repeated failure to deliver avoiding blocking by a single entry in the queue.
+* Event store indicated using EventStore.RABBITMQ
 
 #### Conventions
 1. Queues are created with the name as : 
@@ -141,13 +148,37 @@ This module provides the implementation of the event transmission through redis 
 * Creates a ChannelTopic in Redis based on the channel name
 * Events based on event names are not supported as Redis ChannelTopic does not support routing keys 
 * Only broadcast publish is supported in redis integration
+* Event store indicated using EventStore.REDIS
 
 ### mi-dialogue-kafka
 This module provides the event communication over the Kafka cluster.
 * Implements the Integration interface and provides functionality w.r.t Kafka
 * Provides definition for the ProducerFactory and ConsumerFactory based on the serializers.
+* Event store indicated using EventStore.KAFKA
 * Defines a DirectChannel using the channel name 
 * Associates the channel subscribe method to invoke the annotated class method
+
+### mi-dialogue-rsocket
+This module provides communication of events using the RSockets as channels. 
+* Implements the Integration interface and provides the functionality using RSockets
+* Channel name is passed as host:port format. Eg: 192.168.56.20:9001 
+* Channel name can be provided using IP or actual hostname
+* One host can only consist of one subscriber ( as only one server can listen to a given port)
+* Event store indicated using EventStore.RSOCKET
+* Any number of publishers can publish to same channel.
+* Reconnections at publisher side are done at the time of publish request
+* Subscriber side reconnections and connection failures are handled using a job which is run every 5 minutes ( Controlled using mi-dialogue.rsocket.subscriber.refresh.interval value. This is in the format of a Quartz cron) 
+``` properties
+ # For running reconnect every minute
+ mi-dialogue.rsocket.subscriber.refresh.interval=0 0/1 * * * ?
+
+ # For running reconnect every 30 minutes
+ mi-dialogue.rsocket.subscriber.refresh.interval=0 0/30 * * * ?
+```
+
+* Event names are not supported in RSocket based event communication as of now.
+
+
 
 ## Passing authentication information in events
 Most of the event transfer mechanisms are stateless and does not carry authority or the authentication. Mi-Dialogue allows to configure events to be enriched with authentication from source and then use the same authentication and authority at the subscriber. 
