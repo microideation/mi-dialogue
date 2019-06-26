@@ -8,6 +8,15 @@ Mi-Dialogue is a set of Java spring-boot based libraries that provides a simple,
 3. Authentication carry forward with events
 4. Event subscription failure handling with backoff-policy
 
+See the slidshare link for basic introduction
+
+[![Introduction to Mi-dialogue](https://blog.microideation.com/wp-content/uploads/2019/06/mi-dialogue-slideshare-intro.png)](https://www.slideshare.net/MicroideationIdeatio/mi-dialogueintrov11)
+
+
+Check out the below video for a live session of multi channel event communication
+
+[![Demo of different channels](http://img.youtube.com/vi/rP2YZSZczAs/0.jpg)](http://www.youtube.com/watch?v=rP2YZSZczAs)
+
 
 ## Table of Contents
 
@@ -29,15 +38,6 @@ Mi-Dialogue is a set of Java spring-boot based libraries that provides a simple,
 
 ## Why Mi-Dialogue ?
 Mi-Dialogue was created out requirement for a event based communication without the hassles of going through the store implementation or the spring-integration process. 
-
-See the slidshare link for basic introduction
-
-[![Introduction to Mi-dialogue](https://blog.microideation.com/wp-content/uploads/2019/06/mi-dialogue-slideshare-intro.png)](https://www.slideshare.net/MicroideationIdeatio/mi-dialogueintrov11)
-
-
-Check out the below video for a live session of multi channel event communication
-
-[![Demo of different channels](http://img.youtube.com/vi/rP2YZSZczAs/0.jpg)](http://www.youtube.com/watch?v=rP2YZSZczAs)
 
 ## Modules in Mi-Dialogue
 Mi-dialogue has following modules and can be selectively enabled in a project based on the requirements. The mi-dialogue-core is a common module for all the modules.
