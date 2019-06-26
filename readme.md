@@ -8,22 +8,26 @@ Mi-Dialogue is a set of Java spring-boot based libraries that provides a simple,
 3. Authentication carry forward with events
 4. Event subscription failure handling with backoff-policy
 
+Check out the below video for a live session of multi channel event communication
+
+[![Demo of different channels](http://img.youtube.com/vi/rP2YZSZczAs/0.jpg)](http://www.youtube.com/watch?v=rP2YZSZczAs)
+
 ## Table of Contents
 
-- [Mi-Dialogue](#mi-dialogue)
-  - [Table of Contents](#table-of-contents)
-  - [Why Mi-Dialogue ?](#why-mi-dialogue)
-  - [Modules in Mi-Dialogue](#modules-in-mi-dialogue)
+- [Mi-Dialogue](#Mi-Dialogue)
+  - [Table of Contents](#Table-of-Contents)
+  - [Why Mi-Dialogue ?](#Why-Mi-Dialogue)
+  - [Modules in Mi-Dialogue](#Modules-in-Mi-Dialogue)
     - [mi-dialogue-core](#mi-dialogue-core)
-      - [Publishing an Event](#publishing-an-event)
-      - [Subscribing to an event](#subscribing-to-an-event)
+      - [Publishing an Event](#Publishing-an-Event)
+      - [Subscribing to an event](#Subscribing-to-an-event)
     - [mi-dialogue-rabbit](#mi-dialogue-rabbit)
-      - [Conventions](#conventions)
+      - [Conventions](#Conventions)
     - [mi-dialogue-redis](#mi-dialogue-redis)
     - [mi-dialogue-kafka](#mi-dialogue-kafka)
     - [mi-dialogue-rsocket](#mi-dialogue-rsocket)
-  - [Passing authentication information in events](#passing-authentication-information-in-events)
-    - [Configuring authentication](#configuring-authentication)
+  - [Passing authentication information in events](#Passing-authentication-information-in-events)
+    - [Configuring authentication](#Configuring-authentication)
   
 
 ## Why Mi-Dialogue ?
