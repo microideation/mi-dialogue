@@ -1,48 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.microideation.app.dialogue</groupId>
-	<artifactId>mi-dialogue</artifactId>
-	<version>0.0.3</version>
-	<packaging>pom</packaging>
+    <groupId>com.microideation.app.dialogue</groupId>
+    <artifactId>mi-dialogue</artifactId>
+    <version>0.0.3</version>
+    <packaging>pom</packaging>
 
-	<name>mi-dialogue</name>
-	<description>Mi dialogue base project</description>
+    <name>mi-dialogue</name>
+    <description>Mi dialogue base project</description>
 
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.1.3.RELEASE</version>
-		<relativePath/> <!-- lookup parent from repository -->
-	</parent>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.1.3.RELEASE</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
 
     <properties>
         <start-class>com.microideation.app.dialogue.MIDialogueApplication</start-class>
     </properties>
 
-	<modules>
-		<module>mi-dialogue-core</module>
-		<module>mi-dialogue-redis</module>
-		<module>mi-dialogue-rabbit</module>
+    <modules>
+        <module>mi-dialogue-core</module>
+        <module>mi-dialogue-redis</module>
+        <module>mi-dialogue-rabbit</module>
         <module>mi-dialogue-kafka</module>
-		<module>mi-dialogue-domain</module>
-		<module>mi-dialogue-rsocket</module>
-	</modules>
-	
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <mainClass>${start-class}</mainClass>
-                    <classifier>exec</classifier>
-                </configuration>
-			</plugin>
-		</plugins>
-	</build>
-	
+        <module>mi-dialogue-domain</module>
+        <module>mi-dialogue-rsocket</module>
+    </modules>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <configuration>
+                        <mainClass>${start-class}</mainClass>
+                        <classifier>exec</classifier>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
 
 </project>
