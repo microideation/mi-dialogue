@@ -5,7 +5,7 @@
 
 	<groupId>com.microideation.app.dialogue</groupId>
 	<artifactId>mi-dialogue-rsocket</artifactId>
-	<version>0.0.1</version>
+	<version>2.1.0</version>
 	<name>mi-dialogue-rsocket</name>
 	<description>RSocket channel integration for mi-dialogue</description>
 
@@ -35,7 +35,7 @@
 		<dependency>
 			<groupId>com.microideation.app.dialogue</groupId>
 			<artifactId>mi-dialogue-core</artifactId>
-			<version>0.0.9</version>
+			<version>2.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>io.rsocket</groupId>

@@ -5,7 +5,7 @@
 
 	<groupId>com.microideation.app.dialogue</groupId>
 	<artifactId>mi-dialogue-redis</artifactId>
-	<version>0.0.8</version>
+	<version>2.1.0</version>
 	<packaging>jar</packaging>
 
 	<name>mi-dialogue-redis</name>
@@ -46,7 +46,7 @@
         <dependency>
             <groupId>com.microideation.app.dialogue</groupId>
             <artifactId>mi-dialogue-core</artifactId>
-            <version>0.0.9</version>
+            <version>2.1.0</version>
         </dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

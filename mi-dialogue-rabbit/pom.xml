@@ -5,15 +5,12 @@
 
 	<groupId>com.microideation.app.dialogue</groupId>
 	<artifactId>mi-dialogue-rabbit</artifactId>
-	<version>0.0.8</version>
+	<version>2.1.0</version>
 	<packaging>jar</packaging>
 
 	<name>mi-dialogue-rabbit</name>
-	<description>Rabbit Integration</description>
+	<description>Demo project for Spring Boot</description>
 
-	<!-- IMPORTANT: We cannot change the parent to the mi-dialogue as this is creating
-	     issues when uploaded as library to jfrog.
-	-->
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
@@ -46,7 +43,7 @@
         <dependency>
             <groupId>com.microideation.app.dialogue</groupId>
             <artifactId>mi-dialogue-core</artifactId>
-            <version>0.0.9</version>
+            <version>2.1.0</version>
         </dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
