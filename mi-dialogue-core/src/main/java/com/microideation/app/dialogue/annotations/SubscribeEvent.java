@@ -17,6 +17,7 @@ public @interface SubscribeEvent {
     EventStore eventStore();
     String channelName();
     String eventName() default "";
+    boolean isPersistent() default false;
     boolean isSetAuthentication() default true;
 
 }

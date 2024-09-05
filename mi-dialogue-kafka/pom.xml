@@ -5,7 +5,7 @@
 
 	<groupId>com.microideation.app.dialogue</groupId>
 	<artifactId>mi-dialogue-kafka</artifactId>
-	<version>0.0.5</version>
+	<version>1.5.0</version>
 	<packaging>jar</packaging>
 
 	<name>mi-dialogue-kafka</name>
@@ -27,7 +27,7 @@
         <dependency>
             <groupId>com.microideation.app.dialogue</groupId>
             <artifactId>mi-dialogue-core</artifactId>
-            <version>0.0.4</version>
+            <version>1.5.0</version>
         </dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -63,12 +63,16 @@
             <url>https://repo.spring.io/libs-milestone</url>
         </repository>
         <repository>
+            <id>microideation-mi-dialogue</id>
+            <url>https://dl.cloudsmith.io/public/microideation/mi-dialogue/maven/</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </releases>
             <snapshots>
-                <enabled>false</enabled>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
             </snapshots>
-            <id>bintray-microideation-mi-dialogue</id>
-            <name>bintray</name>
-            <url>http://dl.bintray.com/microideation/mi-dialogue</url>
         </repository>
     </repositories>
 

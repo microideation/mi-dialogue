@@ -302,7 +302,7 @@ public class DialogueRabbitIntegration implements Integration {
 
         // Build the queue
         // If the queue is already existing, this will fail.
-        buildQueue(channelName,queueName,false,subscribeEvent.eventName());
+        buildQueue(channelName,queueName,subscribeEvent.isPersistent(),subscribeEvent.eventName());
 
         //add a message listener for the queue , receiver object is also created for each smsChannel
         MessageListenerAdapter messageListenerAdapter = new MessageListenerAdapter( listener ,methodName);
