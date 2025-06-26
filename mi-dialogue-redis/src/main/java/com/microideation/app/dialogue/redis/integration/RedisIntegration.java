@@ -1,5 +1,7 @@
 package com.microideation.app.dialogue.redis.integration;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -183,19 +185,31 @@ public class RedisIntegration implements Integration {
     private Jackson2JsonRedisSerializer<DialogueEvent> getRedisSerializer() {
     
         ObjectMapper mapper= new ObjectMapper()
+                // We are using the mixin to avoid the issue with the DialogueEvent class
+                // and the ObjectMapper class inside it.
+                .addMixIn(DialogueEvent.class,DialogueEventMixin.class)
                 .registerModule(new JavaTimeModule())
                 .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         
         // Create the serialized
-        Jackson2JsonRedisSerializer<DialogueEvent> serializer = new Jackson2JsonRedisSerializer<>(DialogueEvent.class);
-        
-        // Set the properties
-        serializer.setObjectMapper(mapper);
+        Jackson2JsonRedisSerializer<DialogueEvent> serializer = new Jackson2JsonRedisSerializer<>(mapper,DialogueEvent.class);
         
         // return the serializer
         return serializer;
     }
 
+    // IMPORTANT : This is a workaround to avoid the issue with the DialogueEvent class
+    // and the ObjectMapper class.
+    public abstract class DialogueEventMixin {
+        @JsonIgnore
+        private ObjectMapper objectMapper;
+        
+        @JsonIgnore
+        public abstract ObjectMapper getObjectMapper();
+        
+        @JsonIgnore
+        public abstract void setObjectMapper(ObjectMapper objectMapper);
+    }
 
 }

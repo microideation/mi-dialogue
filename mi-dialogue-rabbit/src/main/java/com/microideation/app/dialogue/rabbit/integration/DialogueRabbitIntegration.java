@@ -294,8 +294,6 @@ public class DialogueRabbitIntegration implements Integration {
         // Add to the queue
         rabbitContainers.put(queueName,simpleMessageListenerContainer);
 
-        System.out.println("Listener container started for queue: " + queueName);
-
         // Return the listener
         return simpleMessageListenerContainer;
 
@@ -348,7 +346,6 @@ public class DialogueRabbitIntegration implements Integration {
     @Override
     public void registerSubscriber(Object listenerClass, String methodName, SubscribeEvent subscribeEvent) {
 
-        System.out.println("Registering subscriber for channel: " + subscribeEvent.channelName());
         // Call the method to create the listener
         createListenerContainer(listenerClass,methodName,subscribeEvent);
 
