@@ -4,7 +4,7 @@ import com.microideation.app.dialogue.annotations.PublishEvent;
 import com.microideation.app.dialogue.annotations.SubscribeEvent;
 import com.microideation.app.dialogue.event.DialogueEvent;
 
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PreDestroy;
 
 /**
  * Created by sandheepgr on 20/6/16.

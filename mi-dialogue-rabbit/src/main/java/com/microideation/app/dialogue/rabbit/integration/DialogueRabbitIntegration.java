@@ -24,8 +24,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.retry.interceptor.RetryOperationsInterceptor;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PreDestroy;
-import javax.annotation.Resource;
+import jakarta.annotation.PreDestroy;
+import jakarta.annotation.Resource;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
