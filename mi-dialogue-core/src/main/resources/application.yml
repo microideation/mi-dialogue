@@ -1,16 +1,1 @@
-server:
-  port: 8080
-
-spring:
-  application:
-    name: mi-dialogue-core
-
----
-
-spring:
-  profiles: dev
-server:
-  port: 8081
-
-
 

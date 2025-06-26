@@ -6,9 +6,9 @@ import com.microideation.app.dialogue.domain.support.AutowireHelper;
 import com.microideation.app.dialogue.service.DialogueEventBus;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.persistence.PostPersist;
-import javax.persistence.PostRemove;
-import javax.persistence.PostUpdate;
+import jakarta.persistence.PostPersist;
+import jakarta.persistence.PostRemove;
+import jakarta.persistence.PostUpdate;
 
 /**
  * Created by sandheepgr on 25/5/17.

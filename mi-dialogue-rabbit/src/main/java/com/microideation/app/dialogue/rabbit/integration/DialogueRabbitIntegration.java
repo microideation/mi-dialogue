@@ -23,9 +23,10 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.retry.interceptor.RetryOperationsInterceptor;
 import org.springframework.stereotype.Component;
+import org.springframework.amqp.support.converter.MessageConverter;
 
-import javax.annotation.PreDestroy;
-import javax.annotation.Resource;
+import jakarta.annotation.PreDestroy;
+import jakarta.annotation.Resource;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -61,6 +62,9 @@ public class DialogueRabbitIntegration implements Integration {
 
     @Autowired
     private Environment environment;
+
+    @Autowired
+    private MessageConverter messageConverter;
 
     // Read the values for the rabbit retry settings
 
@@ -273,6 +277,7 @@ public class DialogueRabbitIntegration implements Integration {
 
         //add a message listener for the queue , receiver object is also created for each smsChannel
         MessageListenerAdapter messageListenerAdapter = new MessageListenerAdapter( listener ,methodName);
+        messageListenerAdapter.setMessageConverter(messageConverter);
 
         //add a messageListenerContainer for the receiver , and set the parameters
         SimpleMessageListenerContainer simpleMessageListenerContainer = new SimpleMessageListenerContainer();
@@ -288,6 +293,8 @@ public class DialogueRabbitIntegration implements Integration {
 
         // Add to the queue
         rabbitContainers.put(queueName,simpleMessageListenerContainer);
+
+        System.out.println("Listener container started for queue: " + queueName);
 
         // Return the listener
         return simpleMessageListenerContainer;
@@ -341,6 +348,7 @@ public class DialogueRabbitIntegration implements Integration {
     @Override
     public void registerSubscriber(Object listenerClass, String methodName, SubscribeEvent subscribeEvent) {
 
+        System.out.println("Registering subscriber for channel: " + subscribeEvent.channelName());
         // Call the method to create the listener
         createListenerContainer(listenerClass,methodName,subscribeEvent);
 

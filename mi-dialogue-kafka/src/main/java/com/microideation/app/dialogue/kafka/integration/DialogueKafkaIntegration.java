@@ -9,21 +9,16 @@ import com.microideation.app.dialogue.support.exception.DialogueException;
 import com.microideation.app.dialogue.support.exception.ErrorCode;
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.integration.channel.DirectChannel;
-import org.springframework.integration.kafka.inbound.KafkaMessageDrivenChannelAdapter;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
-import org.springframework.kafka.support.TopicPartitionInitialOffset;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageHandler;
-import org.springframework.messaging.MessagingException;
-import org.springframework.messaging.SubscribableChannel;
+import org.springframework.kafka.listener.MessageListener;
+import org.springframework.kafka.support.TopicPartitionOffset;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -33,130 +28,89 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component("dialogueKafkaIntegration")
 public class DialogueKafkaIntegration implements Integration {
 
-
     @Autowired
-    private ConsumerFactory kafkaConsumerFactory;
+    private ConsumerFactory<String, DialogueEvent> kafkaConsumerFactory;
 
     @Autowired
     private IntegrationUtils integrationUtils;
 
     @Autowired
-    private KafkaTemplate kafkaTemplate;
-
+    private KafkaTemplate<String, DialogueEvent> kafkaTemplate;
 
     @Resource
-    private ConcurrentHashMap<String,KafkaMessageListenerContainer> kafkaContainers;
-
+    private ConcurrentHashMap<String, KafkaMessageListenerContainer<String, DialogueEvent>> kafkaContainers;
 
     @Override
     public Object publishToChannel(PublishEvent publishEvent, DialogueEvent dialogueEvent) {
-
         // Get the property value for the channelName
         String channelName = integrationUtils.getEnvironmentProperty(publishEvent.channelName());
 
         // Send to the channel
-        kafkaTemplate.send(channelName,dialogueEvent);
+        kafkaTemplate.send(channelName, dialogueEvent);
 
         //  return dialogueEvent
         return dialogueEvent;
-
     }
 
     @Override
     public void registerSubscriber(Object listenerClass, String methodName, SubscribeEvent subscribeEvent) {
-
         // Check if the subscriber has got eventname specified, if yes, we need to
         // show error message as listening to specific key is not supported as of now
-        if ( subscribeEvent.eventName() != null && !subscribeEvent.eventName().equals("") ) {
-
+        if (subscribeEvent.eventName() != null && !subscribeEvent.eventName().equals("")) {
             // Throw the exception
             throw new DialogueException(ErrorCode.ERR_EVENT_SPECIFIC_SUBSCRIBER_NOT_SUPPORTED,
                     "Event name specific listening is not supported in Kafka integration");
-
         }
 
         // Get the channelName
         String channelName = subscribeEvent.channelName();
 
         // Get the finalClass for the listenerClass
-        Class finalClass = AopProxyUtils.ultimateTargetClass(listenerClass);
+        Class<?> finalClass = AopProxyUtils.ultimateTargetClass(listenerClass);
 
         // Get the method by name
-        Method method = ReflectionUtils.findMethod(finalClass,methodName,null);
+        Method method = ReflectionUtils.findMethod(finalClass, methodName, null);
+
+        // Create container properties
+        ContainerProperties containerProperties = new ContainerProperties(new TopicPartitionOffset(channelName, 0));
         
         // Create a listener
-        KafkaMessageListenerContainer<String,DialogueEvent> kafkaMessageListenerContainer =
-                new KafkaMessageListenerContainer<>(kafkaConsumerFactory,
-                        new ContainerProperties(new TopicPartitionInitialOffset(channelName,0)));
-        
-        // Create the adapter
-        KafkaMessageDrivenChannelAdapter<String,DialogueEvent> kafkaMessageDrivenChannelAdapter =
-                new KafkaMessageDrivenChannelAdapter<>(kafkaMessageListenerContainer);
+        KafkaMessageListenerContainer<String, DialogueEvent> kafkaMessageListenerContainer =
+                new KafkaMessageListenerContainer<>(kafkaConsumerFactory, containerProperties);
 
-        // Create the channel
-        SubscribableChannel receiverChannel = getReceiverChannel();
-        
-        // Set the handler
-        receiverChannel.subscribe(new MessageHandler() {
-            @Override
-            public void handleMessage(Message<?> message) throws MessagingException {
-    
-                // IMPORTANT: This will throw error if the method is inside an inner class
-                ReflectionUtils.invokeMethod(method,listenerClass,message.getPayload());
-
-            }
+        // Set the message listener
+        kafkaMessageListenerContainer.setupMessageListener((MessageListener<String, DialogueEvent>) record -> {
+            // IMPORTANT: This will throw error if the method is inside an inner class
+            ReflectionUtils.invokeMethod(method, listenerClass, record.value());
         });
-
-        // Set the output channel
-        kafkaMessageDrivenChannelAdapter.setOutputChannel(receiverChannel);
-
-        // Call the after properties set
-        kafkaMessageDrivenChannelAdapter.afterPropertiesSet();
 
         // Start the container
         kafkaMessageListenerContainer.start();
 
-
+        // Store the container for later cleanup
+        kafkaContainers.put(channelName + "_" + methodName, kafkaMessageListenerContainer);
     }
 
     @Override
     public void stopListeners() {
-
-        // Iterate the through the containers and stop them
-        for ( KafkaMessageListenerContainer container : kafkaContainers.values() ) {
-
+        // Iterate through the containers and stop them
+        for (KafkaMessageListenerContainer<String, DialogueEvent> container : kafkaContainers.values()) {
             container.stop();
-
         }
-
     }
 
     @Override
     public boolean isIntegrationAvailable() {
-
         // check if the beans are available
-        if ( kafkaConsumerFactory == null ) {
-
+        if (kafkaConsumerFactory == null) {
             // Throw the exception
-            throw new DialogueException(ErrorCode.ERR_INTEGRATION_NOT_AVAILABLE,"kafkaConsumerFactory bean is not available");
-
-        } else if ( kafkaTemplate == null ) {
-
+            throw new DialogueException(ErrorCode.ERR_INTEGRATION_NOT_AVAILABLE, "kafkaConsumerFactory bean is not available");
+        } else if (kafkaTemplate == null) {
             // Throw the exception
-            throw new DialogueException(ErrorCode.ERR_INTEGRATION_NOT_AVAILABLE,"kafkaConsumerFactory bean is not available");
-
+            throw new DialogueException(ErrorCode.ERR_INTEGRATION_NOT_AVAILABLE, "kafkaTemplate bean is not available");
         }
 
         // Return true finally
         return true;
-
     }
-   
-    
-    protected SubscribableChannel getReceiverChannel() {
-        
-        return new DirectChannel();
-        
-    }
-
 }

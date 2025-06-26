@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.microideation.app.dialogue.event.DialogueEvent;
 import com.microideation.app.dialogue.rsocket.utils.RSocketGeneralUtils;
 import io.rsocket.RSocket;
-import io.rsocket.RSocketFactory;
+import io.rsocket.core.RSocketConnector;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 import io.rsocket.util.DefaultPayload;
 import lombok.extern.slf4j.Slf4j;
@@ -46,10 +46,8 @@ public class MiRSocketPublisher {
 			String[] splitAddress = RSocketGeneralUtils.splitAddress(addr);
 			
 			// Try to connect to the specified address
-			this.socket = RSocketFactory
-					.connect()
-					.transport(TcpClientTransport.create(splitAddress[0],Integer.parseInt(splitAddress[1])))
-					.start()
+			this.socket = RSocketConnector.create()
+					.connect(TcpClientTransport.create(splitAddress[0],Integer.parseInt(splitAddress[1])))
 					.block();
 		} catch (Exception  e) {
 			
@@ -66,7 +64,9 @@ public class MiRSocketPublisher {
 	 * Method to dispose the connect
 	 */
 	public void dispose() {
-		this.socket.dispose();
+		if (this.socket != null) {
+			this.socket.dispose();
+		}
 	}
 	
 	/**
