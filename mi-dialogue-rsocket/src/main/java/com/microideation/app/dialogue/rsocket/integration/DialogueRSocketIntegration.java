@@ -15,9 +15,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
-import javax.annotation.PreDestroy;
-import javax.annotation.Resource;
-import javax.annotation.Resources;
+import jakarta.annotation.PreDestroy;
+import jakarta.annotation.Resource;
+import jakarta.annotation.Resources;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
 

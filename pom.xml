@@ -5,7 +5,7 @@
 
     <groupId>com.microideation.app.dialogue</groupId>
     <artifactId>mi-dialogue</artifactId>
-    <version>2.1.0</version>
+    <version>3.2.3</version>
     <packaging>pom</packaging>
 
     <name>mi-dialogue</name>
@@ -14,7 +14,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.1.3.RELEASE</version>
+        <version>3.2.3</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -26,9 +26,9 @@
         <module>mi-dialogue-core</module>
         <module>mi-dialogue-redis</module>
         <module>mi-dialogue-rabbit</module>
-        <module>mi-dialogue-kafka</module>
+<!--        <module>mi-dialogue-kafka</module>-->
         <module>mi-dialogue-domain</module>
-        <module>mi-dialogue-rsocket</module>
+<!--        <module>mi-dialogue-rsocket</module>-->
     </modules>
 
     <build>

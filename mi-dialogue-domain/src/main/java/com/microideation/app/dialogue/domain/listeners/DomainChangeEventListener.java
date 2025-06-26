@@ -4,11 +4,11 @@ import com.microideation.app.dialogue.dictionary.DomainChangeEventType;
 import com.microideation.app.dialogue.domain.publisher.DomainChangePublisher;
 import com.microideation.app.dialogue.domain.support.AutowireHelper;
 import com.microideation.app.dialogue.service.DialogueEventBus;
+import jakarta.persistence.PostPersist;
+import jakarta.persistence.PostRemove;
+import jakarta.persistence.PostUpdate;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.persistence.PostPersist;
-import javax.persistence.PostRemove;
-import javax.persistence.PostUpdate;
 
 /**
  * Created by sandheepgr on 25/5/17.

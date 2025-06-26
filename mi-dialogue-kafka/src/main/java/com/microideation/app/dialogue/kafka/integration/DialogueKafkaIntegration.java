@@ -23,7 +23,7 @@ import org.springframework.messaging.SubscribableChannel;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
 
