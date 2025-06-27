@@ -46,5 +46,15 @@
         </pluginManagement>
     </build>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>cloudsmith</id>
+            <url>https://maven.cloudsmith.io/microideation/mi-dialogue/</url>
+        </snapshotRepository>
+        <repository>
+            <id>cloudsmith</id>
+            <url>https://maven.cloudsmith.io/microideation/mi-dialogue/</url>
+        </repository>
+    </distributionManagement>
 
 </project>
