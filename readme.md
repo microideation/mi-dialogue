@@ -1,4 +1,3 @@
-
 # Mi-Dialogue
 
 Mi-Dialogue is a set of Java spring-boot based libraries that provides a simple, unified, channel agnostic microservices event communication mechanism over different channels. Following are the main features supported.
@@ -163,10 +162,93 @@ This module provides the implementation of the event transmission through redis 
 ### mi-dialogue-kafka
 This module provides the event communication over the Kafka cluster.
 * Implements the Integration interface and provides functionality w.r.t Kafka
-* Provides definition for the ProducerFactory and ConsumerFactory based on the serializers.
+* Provides definition for the ProducerFactory and ConsumerFactory based on the serializers
 * Event store indicated using EventStore.KAFKA
-* Defines a DirectChannel using the channel name 
-* Associates the channel subscribe method to invoke the annotated class method
+* Automatic topic creation with configurable partitions and replication factors
+* Per-subscription group ID configuration
+* Externalized configuration through application.yml
+
+#### Configuration
+The Kafka integration can be configured through `application.yml` or `application.properties`. The following table shows all available configuration options with their default values. These properties can be overridden as and when required for your specific use case.
+
+| Configuration Property | Default Value | Description |
+|----------------------|---------------|-------------|
+| `kafka.broker.address` | `192.168.0.104:9092` | Kafka broker address |
+| `kafka.zookeeper.connect` | `192.168.0.104:2181` | Zookeeper connection string |
+| `kafka.consumer.groupIdConfig` | `mi-dialogue-default-group` | Default consumer group ID |
+| `kafka.consumer.enableAutoCommit` | `true` | Enable auto-commit for consumers |
+| `kafka.consumer.autoCommitIntervalMs` | `100` | Auto-commit interval in milliseconds |
+| `kafka.consumer.sessionTimeoutMs` | `15000` | Consumer session timeout in milliseconds |
+| `kafka.producer.retries` | `0` | Number of retries for failed producer requests |
+| `kafka.producer.batchSize` | `16384` | Producer batch size in bytes |
+| `kafka.producer.lingerMs` | `1` | Time to wait before sending batches in milliseconds |
+| `kafka.producer.bufferMemory` | `33554432` | Total memory for buffering records in bytes |
+| `kafka.topic.defaultPartitionCount` | `3` | Default number of partitions for new topics |
+| `kafka.topic.defaultReplicationFactor` | `1` | Default replication factor for new topics |
+
+#### Publishing Events
+Kafka topics are automatically created when publishing events. The topic configuration is taken from the `@PublishEvent` annotation:
+
+```java
+@Service
+public class CustomerService {
+    @PublishEvent(
+        eventStore = EventStore.KAFKA, 
+        channelName = "com.microideation.customers",
+        partitionCount = 5,
+        replicationFactor = 2
+    )
+    public Customer createCustomer(String mobile, String name) {
+        Customer customer = new Customer(mobile, name);
+        customer = customerRepository.save(customer);
+        return customer;
+    }
+}
+```
+
+#### Subscribing to Events
+Subscribers can specify custom group IDs for better control over message consumption:
+
+```java
+@DialogueEventListener
+public class CustomerEventListener {
+
+    @SubscribeEvent(
+        eventStore = EventStore.KAFKA,
+        channelName = "com.microideation.customers",
+        groupId = "customer-processing-group"
+    )
+    public void receiveCustomerEvents(DialogueEvent event) {
+        Customer customer = event.getPayload(Customer.class);
+        // Process customer event
+    }
+
+    // Using default group ID (generated from class and method name)
+    @SubscribeEvent(
+        eventStore = EventStore.KAFKA,
+        channelName = "com.microideation.customers"
+    )
+    public void handleCustomerUpdates(DialogueEvent event) {
+        Customer customer = event.getPayload(Customer.class);
+        // Process customer updates
+    }
+}
+```
+
+#### Features
+* **Automatic Topic Creation**: Topics are created automatically with specified partition count and replication factor
+* **Per-Subscription Group IDs**: Each subscription can have its own consumer group ID
+* **Default Group ID Generation**: When no group ID is specified, a default is generated based on class and method name
+* **Externalized Configuration**: All Kafka settings are configurable through application.yml
+* **Topic Caching**: Topic existence is cached to avoid repeated checks
+* **Error Handling**: Graceful handling of topic creation errors
+
+#### Conventions
+1. Topics are created with the name specified in the `channelName` parameter
+2. Group IDs can be specified per subscription using the `groupId` parameter in `@SubscribeEvent`
+3. Default group IDs follow the pattern: `{ClassName}-{methodName}-group`
+4. Topics are created automatically when first accessed (publish or subscribe)
+5. Event name specific listening is not supported in Kafka integration
 
 ### mi-dialogue-rsocket
 This module provides communication of events using the RSockets as channels. 

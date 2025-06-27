@@ -6,3 +6,17 @@ kafka:
   consumer:
     # Default group ID used when no groupId is specified in @SubscribeEvent annotation
     groupIdConfig: mi-dialogue-default-group
+    # Consumer configuration
+    enableAutoCommit: true
+    autoCommitIntervalMs: 100
+    sessionTimeoutMs: 15000
+  producer:
+    # Producer configuration
+    retries: 0
+    batchSize: 16384
+    lingerMs: 1
+    bufferMemory: 33554432
+  topic:
+    # Default topic configuration
+    defaultPartitionCount: 3
+    defaultReplicationFactor: 1

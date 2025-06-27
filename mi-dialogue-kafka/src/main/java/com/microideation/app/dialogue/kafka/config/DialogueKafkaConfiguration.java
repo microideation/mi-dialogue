@@ -31,6 +31,18 @@ public class DialogueKafkaConfiguration {
     @Value("${kafka.consumer.groupIdConfig:mi-dialogue-group}")
     private String defaultGroupId;
 
+    @Value("${kafka.producer.retries:0}")
+    private int producerRetries;
+
+    @Value("${kafka.producer.batchSize:16384}")
+    private int producerBatchSize;
+
+    @Value("${kafka.producer.lingerMs:1}")
+    private int producerLingerMs;
+
+    @Value("${kafka.producer.bufferMemory:33554432}")
+    private int producerBufferMemory;
+
     @Bean
     public KafkaTemplate<String, DialogueEvent> kafkaTemplate() {
         return new KafkaTemplate<>(kafkaProducerFactory());
@@ -40,10 +52,10 @@ public class DialogueKafkaConfiguration {
     public ProducerFactory<String, DialogueEvent> kafkaProducerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, this.brokerAddress);
-        props.put(ProducerConfig.RETRIES_CONFIG, 0);
-        props.put(ProducerConfig.BATCH_SIZE_CONFIG, 16384);
-        props.put(ProducerConfig.LINGER_MS_CONFIG, 1);
-        props.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
+        props.put(ProducerConfig.RETRIES_CONFIG, this.producerRetries);
+        props.put(ProducerConfig.BATCH_SIZE_CONFIG, this.producerBatchSize);
+        props.put(ProducerConfig.LINGER_MS_CONFIG, this.producerLingerMs);
+        props.put(ProducerConfig.BUFFER_MEMORY_CONFIG, this.producerBufferMemory);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, DialogueEventSerializer.class);
         return new DefaultKafkaProducerFactory<>(props);

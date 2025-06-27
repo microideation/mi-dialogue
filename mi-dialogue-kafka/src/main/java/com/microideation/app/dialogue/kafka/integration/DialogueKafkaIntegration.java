@@ -45,6 +45,21 @@ public class DialogueKafkaIntegration implements Integration {
     @Value("${kafka.consumer.groupIdConfig:mi-dialogue-group}")
     private String defaultGroupId;
 
+    @Value("${kafka.consumer.enableAutoCommit:true}")
+    private boolean enableAutoCommit;
+
+    @Value("${kafka.consumer.autoCommitIntervalMs:100}")
+    private int autoCommitIntervalMs;
+
+    @Value("${kafka.consumer.sessionTimeoutMs:15000}")
+    private int sessionTimeoutMs;
+
+    @Value("${kafka.topic.defaultPartitionCount:3}")
+    private int defaultPartitionCount;
+
+    @Value("${kafka.topic.defaultReplicationFactor:1}")
+    private int defaultReplicationFactor;
+
     @Autowired
     private DialogueKafkaConfiguration kafkaConfiguration;
 
@@ -89,7 +104,7 @@ public class DialogueKafkaIntegration implements Integration {
         String channelName = subscribeEvent.channelName();
 
         // Ensure the topic exists before subscribing (use default values for partitions and replication)
-        ensureTopicExists(channelName, 3, 1);
+        ensureTopicExists(channelName, defaultPartitionCount, defaultReplicationFactor);
 
         // Get the finalClass for the listenerClass
         Class<?> finalClass = AopProxyUtils.ultimateTargetClass(listenerClass);
@@ -186,9 +201,9 @@ public class DialogueKafkaIntegration implements Integration {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, this.brokerAddress);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, true);
-        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, 100);
-        props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, 15000);
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, this.enableAutoCommit);
+        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, this.autoCommitIntervalMs);
+        props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, this.sessionTimeoutMs);
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, DialogueEventDeserializer.class);
         return new DefaultKafkaConsumerFactory<>(props);

@@ -22,6 +22,8 @@ public @interface PublishEvent {
     String channelName();
     PublishType publishType() default PublishType.BROADCAST;
     boolean isSetAuthority() default true;
+
+    // Kafka specific properties
     int partitionCount() default 3;
     int replicationFactor() default 1;
 
