@@ -11,6 +11,7 @@ import com.microideation.app.dialogue.support.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.framework.AopProxyUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
@@ -33,6 +34,7 @@ public class DialogueRSocketIntegration implements Integration {
 	private ConcurrentHashMap<String,MiRSocketPublisher> miRSocketPublishers;
 
 	@Autowired
+	@Qualifier("rsocketObjectMapper")
 	private ObjectMapper mapper;
 	
 	@Autowired
