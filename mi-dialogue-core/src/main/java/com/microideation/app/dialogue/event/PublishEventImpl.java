@@ -16,6 +16,8 @@ public class PublishEventImpl implements PublishEvent {
     private PublishType publishType;
     private Class<? extends Annotation> annotationType;
     private boolean isSetAuthority;
+    private int partitionCount;
+    private int replicationFactor;
 
 
     // Annotation overridden methods
@@ -54,6 +56,16 @@ public class PublishEventImpl implements PublishEvent {
         return annotationType;
     }
 
+    @Override
+    public int partitionCount() {
+        return partitionCount;
+    }
+
+    @Override
+    public int replicationFactor() {
+        return replicationFactor;
+    }
+
 
     // Setter methods
     public void setEventStore(EventStore eventStore) {
@@ -82,5 +94,13 @@ public class PublishEventImpl implements PublishEvent {
 
     public void setAuthority(boolean isSetAuthority) {
         this.isSetAuthority = isSetAuthority;
+    }
+
+    public void setPartitionCount(int partitionCount) {
+        this.partitionCount = partitionCount;
+    }
+
+    public void setReplicationFactor(int replicationFactor) {
+        this.replicationFactor = replicationFactor;
     }
 }

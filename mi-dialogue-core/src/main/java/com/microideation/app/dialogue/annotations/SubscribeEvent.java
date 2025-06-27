@@ -28,5 +28,8 @@ public @interface SubscribeEvent {
     
     // Concurrenct consumers in the case of rabbitmq
     int concurrentConsumers() default 5;
+    
+    // Group ID for Kafka consumers (optional, will use default if not specified)
+    String groupId() default "";
 
 }

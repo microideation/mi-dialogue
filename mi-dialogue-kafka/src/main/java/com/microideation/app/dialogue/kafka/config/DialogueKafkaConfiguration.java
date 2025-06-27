@@ -1,11 +1,8 @@
 package com.microideation.app.dialogue.kafka.config;
 
 import com.microideation.app.dialogue.event.DialogueEvent;
-import com.microideation.app.dialogue.kafka.integration.DialogueEventDeserializer;
 import com.microideation.app.dialogue.kafka.integration.DialogueEventSerializer;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -31,17 +28,16 @@ public class DialogueKafkaConfiguration {
     @Value("${kafka.zookeeper.connect}")
     private String zookeeperConnect;
 
-    @Value("${kafka.consumer.groupIdConfig}")
-    private String groupIdConfig;
-
+    @Value("${kafka.consumer.groupIdConfig:mi-dialogue-group}")
+    private String defaultGroupId;
 
     @Bean
-    public KafkaTemplate<?,?> kafkaTemplate() {
-        return new KafkaTemplate(kafkaProducerFactory());
+    public KafkaTemplate<String, DialogueEvent> kafkaTemplate() {
+        return new KafkaTemplate<>(kafkaProducerFactory());
     }
 
     @Bean
-    public ProducerFactory<?,?> kafkaProducerFactory() {
+    public ProducerFactory<String, DialogueEvent> kafkaProducerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, this.brokerAddress);
         props.put(ProducerConfig.RETRIES_CONFIG, 0);
@@ -52,30 +48,9 @@ public class DialogueKafkaConfiguration {
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, DialogueEventSerializer.class);
         return new DefaultKafkaProducerFactory<>(props);
     }
-    
-    /**
-     * IMPORTANT: This method need to be of type <?,?> to avoid startup error
-     * caused by the KafkaAutoConfiguration class of Spring
-     */
-    @Bean
-    public ConsumerFactory<?,?> kafkaConsumerFactory() {
-        Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, this.brokerAddress);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, groupIdConfig);
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, true);
-        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, 100);
-        props.put(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, 15000);
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, DialogueEventDeserializer.class);
-        return new DefaultKafkaConsumerFactory<>(props);
-    }
 
     @Bean
-    public ConcurrentHashMap<String,KafkaMessageListenerContainer> kafkaContainers() {
-
+    public ConcurrentHashMap<String, KafkaMessageListenerContainer<String, DialogueEvent>> kafkaContainers() {
         return new ConcurrentHashMap<>(0);
-
     }
-
-
 }

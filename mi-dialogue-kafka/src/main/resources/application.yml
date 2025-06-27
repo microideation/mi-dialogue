@@ -4,4 +4,5 @@ kafka:
   zookeeper:
     connect: 192.168.0.104:2181
   consumer:
-    groupIdConfig: dialogueGroup
+    # Default group ID used when no groupId is specified in @SubscribeEvent annotation
+    groupIdConfig: mi-dialogue-default-group

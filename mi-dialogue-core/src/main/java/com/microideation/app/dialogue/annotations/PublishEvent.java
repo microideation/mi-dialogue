@@ -22,5 +22,7 @@ public @interface PublishEvent {
     String channelName();
     PublishType publishType() default PublishType.BROADCAST;
     boolean isSetAuthority() default true;
+    int partitionCount() default 3;
+    int replicationFactor() default 1;
 
 }
