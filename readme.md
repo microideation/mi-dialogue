@@ -7,6 +7,14 @@ Mi-Dialogue is a set of Java Spring Boot-based libraries that provides a simple,
 3. Authentication carry-forward with events
 4. Event subscription failure handling with backoff-policy
 
+## Latest packages
+- [mi-dialogue-core : 3.2.3](https://cloudsmith.io/~microideation/repos/mi-dialogue/packages/detail/maven/mi-dialogue-core/3.2.3/a=noarch;xg=com.microideation.app.dialogue/)
+- [mi-dialogue-rabbit : 3.2.3](https://cloudsmith.io/~microideation/repos/mi-dialogue/packages/detail/maven/mi-dialogue-rabbit/3.2.3/a=noarch;xg=com.microideation.app.dialogue/)
+- [mi-dialogue-domain : 3.2.3](https://cloudsmith.io/~microideation/repos/mi-dialogue/packages/detail/maven/mi-dialogue-domain/3.2.3/a=noarch;xg=com.microideation.app.dialogue/)
+- [mi-dialogue-redis : 3.2.3](https://cloudsmith.io/~microideation/repos/mi-dialogue/packages/detail/maven/mi-dialogue-redis/3.2.3/a=noarch;xg=com.microideation.app.dialogue/)
+- [mi-dialogue-kafka : 3.2.3](https://cloudsmith.io/~microideation/repos/mi-dialogue/packages/detail/maven/mi-dialogue-kafka/3.2.3/a=noarch;xg=com.microideation.app.dialogue/)
+- [mi-dialogue-rsocket : 3.2.3](https://cloudsmith.io/~microideation/repos/mi-dialogue/packages/detail/maven/mi-dialogue-rsocket/3.2.3/a=noarch;xg=com.microideation.app.dialogue/)
+
 See the slideshare link for basic introduction:
 
 [![Introduction to Mi-dialogue](https://blog.microideation.com/wp-content/uploads/2019/06/mi-dialogue-slideshare-intro.png)](https://www.slideshare.net/MicroideationIdeatio/mi-dialogueintrov11)
