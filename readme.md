@@ -32,11 +32,18 @@ Check out the below video for a live session of multi-channel event communicatio
     - [mi-dialogue-core](#mi-dialogue-core)
       - [Publishing an Event](#Publishing-an-Event)
       - [Subscribing to an Event](#Subscribing-to-an-Event)
-    - [mi-dialogue-rabbit](#mi-dialogue-rabbit)
-      - [Conventions](#Conventions)
-    - [mi-dialogue-redis](#mi-dialogue-redis)
-    - [mi-dialogue-kafka](#mi-dialogue-kafka)
-    - [mi-dialogue-rsocket](#mi-dialogue-rsocket)
+    - [🔹 Live streaming channels (no persistence)](#-live-streaming-channels-no-persistence)
+      - [mi-dialogue-redis](#mi-dialogue-redis)
+      - [mi-dialogue-rsocket](#mi-dialogue-rsocket)
+    - [🔹 Durable messaging channels](#-durable-messaging-channels)
+      - [mi-dialogue-rabbit](#mi-dialogue-rabbit)
+        - [Conventions](#Conventions)
+      - [mi-dialogue-kafka](#mi-dialogue-kafka)
+        - [Configuration](#Configuration)
+        - [Publishing Events](#Publishing-Events)
+        - [Subscribing to Events](#Subscribing-to-Events)
+        - [Features](#Features)
+        - [Conventions](#Conventions-1)
   - [Passing Authentication Information in Events](#Passing-authentication-information-in-events)
     - [Configuring Authentication](#Configuring-authentication)
 
@@ -135,25 +142,9 @@ This would register the subscriber based on the event-store selected and the cha
 > The SubscribeEvent requires an ObjectMapper bean defined in the Spring context and this will be automatically set to the DialogueEvent object when the event is received.
 There is also an overloaded method for getPayload where you can pass your own ObjectMapper instance for serializing the payload.
 
-### mi-dialogue-rabbit
-Provides the implementation logic for the event transmission through RabbitMQ as a channel.
-* Implements the Integration interface and provides functionality w.r.t RabbitMQ
-* Auto declaration of queue and exchanges based on the PublishEvent annotation
-* Generation and registering of listener for the methods annotated with SubscribeEvent
-* Dead letter queue binding
-* Backoff policy definition
-* Routing based on event names as routing keys
-* Consumer configuration based on annotation params
-* Requeue of event to the end of queue on repeated failure to deliver avoiding blocking by a single entry in the queue.
-* Event store indicated using EventStore.RABBITMQ
+### 🔹 Live streaming channels (no persistence)
 
-#### Conventions
-1. Queues are created with the name as:
-   channel name (annotation value) + "-sub-" + service name (spring.application.name) + the annotated method class name in lowercase + method name in lowercase.
-2. Exchange name is defined as the channel name passed in the annotation
-3. Creates a FanoutExchange if the event publish type is BROADCAST (which is by default). If the publish type is EVENT_SPECIFIC, then a DirectExchange is created with the event name as the routing key.
-
-### mi-dialogue-redis
+#### mi-dialogue-redis
 This module provides the implementation of the event transmission through Redis as a channel.
 * Implements the Integration interface and provides functionality w.r.t Redis
 * The key for the channel is generated as channel name + method name of the annotated class method
@@ -166,7 +157,48 @@ This module provides the implementation of the event transmission through Redis 
 * Redis uses fire-and-forget method, there is no storage of events anywhere. If there are no subscribers, it will be lost.
 * You cannot have duplicate subscribers on the same channel and same method.
 
-### mi-dialogue-kafka
+#### mi-dialogue-rsocket
+This module provides communication of events using RSockets as channels.
+* Implements the Integration interface and provides the functionality using RSockets
+* Channel name is passed as host:port format. E.g.: 192.168.56.20:9001
+* Channel name can be provided using IP or actual hostname
+* One host can only consist of one subscriber (as only one server can listen to a given port)
+* Event store indicated using EventStore.RSOCKET
+* Any number of publishers can publish to the same channel.
+* Reconnections at publisher side are done at the time of publish request
+* Subscriber side reconnections and connection failures are handled using a job which is run every 5 minutes (Controlled using mi-dialogue.rsocket.subscriber.refresh.interval value. This is in the format of a Quartz cron)
+
+```properties
+# For running reconnect every minute
+mi-dialogue.rsocket.subscriber.refresh.interval=0 0/1 * * * ?
+
+# For running reconnect every 30 minutes
+mi-dialogue.rsocket.subscriber.refresh.interval=0 0/30 * * * ?
+```
+
+* Event names are not supported in RSocket-based event communication as of now.
+
+### 🔹 Durable messaging channels
+
+#### mi-dialogue-rabbit
+Provides the implementation logic for the event transmission through RabbitMQ as a channel.
+* Implements the Integration interface and provides functionality w.r.t RabbitMQ
+* Auto declaration of queue and exchanges based on the PublishEvent annotation
+* Generation and registering of listener for the methods annotated with SubscribeEvent
+* Dead letter queue binding
+* Backoff policy definition
+* Routing based on event names as routing keys
+* Consumer configuration based on annotation params
+* Requeue of event to the end of queue on repeated failure to deliver avoiding blocking by a single entry in the queue.
+* Event store indicated using EventStore.RABBITMQ
+
+##### Conventions
+1. Queues are created with the name as:
+   channel name (annotation value) + "-sub-" + service name (spring.application.name) + the annotated method class name in lowercase + method name in lowercase.
+2. Exchange name is defined as the channel name passed in the annotation
+3. Creates a FanoutExchange if the event publish type is BROADCAST (which is by default). If the publish type is EVENT_SPECIFIC, then a DirectExchange is created with the event name as the routing key.
+
+#### mi-dialogue-kafka
 This module provides the event communication over the Kafka cluster.
 * Implements the Integration interface and provides functionality w.r.t Kafka
 * Provides definition for the ProducerFactory and ConsumerFactory based on the serializers
@@ -175,7 +207,7 @@ This module provides the event communication over the Kafka cluster.
 * Per-subscription group ID configuration
 * Externalized configuration through application.yml
 
-#### Configuration
+##### Configuration
 The Kafka integration can be configured through `application.yml` or `application.properties`. The following table shows all available configuration options with their default values. These properties can be overridden as and when required for your specific use case.
 
 | Configuration Property | Default Value | Description |
@@ -193,7 +225,7 @@ The Kafka integration can be configured through `application.yml` or `applicatio
 | `kafka.topic.defaultPartitionCount` | `3` | Default number of partitions for new topics |
 | `kafka.topic.defaultReplicationFactor` | `1` | Default replication factor for new topics |
 
-#### Publishing Events
+##### Publishing Events
 Kafka topics are automatically created when publishing events. The topic configuration is taken from the `@PublishEvent` annotation:
 
 ```java
@@ -213,7 +245,7 @@ public class CustomerService {
 }
 ```
 
-#### Subscribing to Events
+##### Subscribing to Events
 Subscribers can specify custom group IDs for better control over message consumption:
 
 ```java
@@ -242,7 +274,7 @@ public class CustomerEventListener {
 }
 ```
 
-#### Features
+##### Features
 * **Automatic Topic Creation**: Topics are created automatically with specified partition count and replication factor
 * **Per-Subscription Group IDs**: Each subscription can have its own consumer group ID
 * **Default Group ID Generation**: When no group ID is specified, a default is generated based on class and method name
@@ -250,33 +282,12 @@ public class CustomerEventListener {
 * **Topic Caching**: Topic existence is cached to avoid repeated checks
 * **Error Handling**: Graceful handling of topic creation errors
 
-#### Conventions
+##### Conventions
 1. Topics are created with the name specified in the `channelName` parameter
 2. Group IDs can be specified per subscription using the `groupId` parameter in `@SubscribeEvent`
 3. Default group IDs follow the pattern: `{ClassName}-{methodName}-group`
 4. Topics are created automatically when first accessed (publish or subscribe)
 5. Event name specific listening is not supported in Kafka integration
-
-### mi-dialogue-rsocket
-This module provides communication of events using RSockets as channels.
-* Implements the Integration interface and provides the functionality using RSockets
-* Channel name is passed as host:port format. E.g.: 192.168.56.20:9001
-* Channel name can be provided using IP or actual hostname
-* One host can only consist of one subscriber (as only one server can listen to a given port)
-* Event store indicated using EventStore.RSOCKET
-* Any number of publishers can publish to the same channel.
-* Reconnections at publisher side are done at the time of publish request
-* Subscriber side reconnections and connection failures are handled using a job which is run every 5 minutes (Controlled using mi-dialogue.rsocket.subscriber.refresh.interval value. This is in the format of a Quartz cron)
-
-```properties
-# For running reconnect every minute
-mi-dialogue.rsocket.subscriber.refresh.interval=0 0/1 * * * ?
-
-# For running reconnect every 30 minutes
-mi-dialogue.rsocket.subscriber.refresh.interval=0 0/30 * * * ?
-```
-
-* Event names are not supported in RSocket-based event communication as of now.
 
 ## Passing Authentication Information in Events
 Most of the event transfer mechanisms are stateless and do not carry authority or authentication. Mi-Dialogue allows configuring events to be enriched with authentication from source and then use the same authentication and authority at the subscriber.
